@@ -1,8 +1,13 @@
 {
   "name": "@rgwch/mikrorest",
-  "version": "0.4.2",
+  "private": false,
+  "version": "0.4.3",
   "description": "A minimal REST server",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rgwch/mikrorest.git"
+  },
   "author": "rgwch",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
