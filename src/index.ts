@@ -23,7 +23,6 @@ export interface MikroRestRoute {
 
 export type MikroRestOptions = {
   port?: number; // Port number for the server
-  allowedOrigins?: string[]; // Allowed origins for CORS
   allowedHeadersDevel?: string[]; // Allowed headers in development mode
   allowedMethodsDevel?: string[]; // Allowed methods in development mode
   allowedOriginsDevel?: string[]; // Allowed origins in development mode
@@ -68,7 +67,6 @@ export class MikroRest {
   public constructor(options?: MikroRestOptions) {
     this.port = options?.port || parseInt(process.env.PORT || '3339');
     if (options) {
-      this.allowedOrigins = options.allowedOrigins || this.allowedOrigins;
       this.allowedHeadersDevel = options.allowedHeadersDevel || this.allowedHeadersDevel;
       this.allowedMethodsDevel = options.allowedMethodsDevel || this.allowedMethodsDevel;
       this.allowedOriginsDevel = options.allowedOriginsDevel || this.allowedOriginsDevel;
