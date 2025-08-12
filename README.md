@@ -1,6 +1,7 @@
 # MicroRest Server
 
 A minimal, but fully functional REST server for NodeJS.
+Use for proof-of concepts, simple private servers and so on.
 
 ## Install
 
@@ -90,30 +91,38 @@ public constructor(options?:MoktoRestOptions)
     logger.info("All routes and static dirs cleared");
   }
 
-   /**
-   * Convenience function to get the URL from the request
-   * @param req 
-   * @returns 
-   */
-  public getUrl(req: IncomingMessage): URL {
-    return new URL(req.url!, `http://${req.headers.host}`);
-  }
-
-  /**
-   * Convenience function to get the query parameters from the request
-   * @param req 
-   * @returns 
-   */
-  public getParams(req: IncomingMessage): URLSearchParams {
-    return this.getUrl(req).searchParams;
-  }
-
+  
+ 
   /**
    * Launch the server
    */
   public start()
-```
 
+  /** Some convenience methods */
+
+ /** Get the URL from the request */
+  public getUrl(req: IncomingMessage): URL {
+    return new URL(req.url!, `http://${req.headers.host}`);
+  }
+
+ /** Get the query parameters from the request */
+  public getParams(req: IncomingMessage): URLSearchParams {
+    return this.getUrl(req).searchParams;
+  }
+
+  /** Send JSON answer */
+  public sendJson(res?: ServerResponse, body?: any, code: number = 200)
+
+  /** Send HTML answer */
+  public sendHtml(res?: ServerResponse, body?: string, code: number = 200)
+
+  /** Send plaintext asnwer */
+  public sendPlain(res?: ServerResponse, text?: string, code: number = 200)
+
+  /** Send binary answer */
+   public sendBuffer(res?: ServerResponse, buffer?: Buffer, code: number = 200, contentType: string = "application/octet-stream") 
+```
+  
 ## Tests
 
 Tests were created by Github Copilot. See tests/README.md

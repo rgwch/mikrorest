@@ -13,8 +13,6 @@ jest.mock('../src/logger', () => ({
     }
 }));
 
-// Mock dotenv/config
-jest.mock('dotenv/config');
 
 // Mock console.log to prevent output during tests
 global.console = {
