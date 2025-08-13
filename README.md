@@ -54,15 +54,18 @@ export type MikroRestOptions = {
 };
 
 /**
- * Create a new MikroRest Server. Options can be empty or contain any of the above parameters. Default port is 3339, if none is given.
+ * Create a new MikroRest Server. Options can be empty or contain any of the above parameters.
+   Default port is 3339, if none is given.
  */
 public constructor(options?:MoktoRestOptions)
 
   /**
-   * Adds a new route to the MikroRest instance. If the method is called several times with the same methoid and path, handlers are just appended to existing
+   * Adds a new route to the MikroRest instance. If the method is called several times with the same method
+     and path, handlers are just appended to existing.
    * @param method The HTTP method for the route (GET, POST, OPTIONBS, PUT, DELETE)
    * @param path The path for the route, starting with /
-   * @param handlers The handler functions for the route, If more than one handler is supplied, handlers are called in the order given.
+   * @param handlers The handler functions for the route, If more than one handler is supplied,
+     handlers are called in the order given.
    * If a handler returns true, the next handler of tze chain is called, else the call is terminated
    * @throws Error if parameters are wrong
    */
