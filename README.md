@@ -45,7 +45,6 @@ export interface MikroRestRoute {
 
 export type MikroRestOptions = {
   port?: number; // Port number for the server
-  allowedOrigins?: string[]; // Allowed origins for CORS
   allowedHeadersDevel?: string[]; // Allowed headers in development mode
   allowedMethodsDevel?: string[]; // Allowed methods in development mode
   allowedOriginsDevel?: string[]; // Allowed origins in development mode
