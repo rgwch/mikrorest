@@ -9,7 +9,7 @@ Use for proof-of concepts, simple private servers and so on.
 
 ## Use
 
-see src/demo.ts. Run with `npx ts-node src/demo.ts`
+see src/demo.ts. Run with `npm run demo` or `npx ts-node src/demo.ts`
 
 ## API
 
