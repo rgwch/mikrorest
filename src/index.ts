@@ -1,17 +1,15 @@
-//import "dotenv/config"
 import { createServer, IncomingMessage, ServerResponse } from "http";
 import { logger } from "./logger";
 const pck = require('../package.json')
 import { createReadStream } from "fs";
 import path from "path";
-// logger.warning(JSON.stringify(process.env, null, 2))
+// for build-in authorization, set API_KEYS in environment
 const api_keys = process.env.API_KEYS?.split(",") || []
 
 const serverError = "Internal Server Error"
 const badRequest = "Bad Request"
 const notFound = "Not Found"
 import { existsSync } from "fs";
-import { log } from "console";
 
 export type MikroRestHandler = (req: IncomingMessage, res: ServerResponse) => Promise<boolean>;
 export type MikroRestMethod = "get" | "post" | "put" | "delete" | "options";
@@ -56,7 +54,7 @@ export class MikroRest {
   private routes: Map<string, MikroRestRoute> = new Map();
 
   private staticDirs: string[] = [
-    // path.join(__dirname, "..", "..", 'client', "dist")
+    // e.g. path.join(__dirname, "..", "..", 'client', "dist")
   ];
 
   /**
@@ -80,12 +78,15 @@ export class MikroRest {
   }
 
   /**
-   * Adds a new route to the MikroRest instance.
-   * @param method The HTTP method for the route
-   * @param path The path for the route
-   * @param handler The handler function for the route
-   * @param auth Whether the route requires authentication
-   * @returns 
+   * Adds a new route to the MikroRest instance. 
+   * If the method is called several times with the same method and path, 
+   * handlers are just appended to existing.
+   * @param method The HTTP method for the route (GET, POST, OPTIONS, PUT, DELETE)
+   * @param path The path for the route, starting with /
+   * @param handlers The handler functions for the route, If more than one handler is supplied,
+     handlers are called in the order given.
+   * If a handler returns true, the next handler of the chain is called, else the call is terminated
+   * @throws Error if parameters are wrong
    */
   public addRoute(method: MikroRestMethod, path: string, ...handlers: Array<MikroRestHandler>) {
     if (!method || !path || !handlers || handlers.length === 0 || !handlers[0]) {
@@ -112,7 +113,7 @@ export class MikroRest {
       });
     }
     logger.debug(`Route added: ${method.toUpperCase()} ${path}`);
-  
+
   }
 
   /**
@@ -202,6 +203,13 @@ export class MikroRest {
     });
   }
 
+  /**
+   * Built-in authorization: Check header for Bearer or Token and a key supplied in API_KEYS.
+   * To use, simply prepend server.authorize to your handler in a route definition.
+   * @param req 
+   * @param res 
+   * @returns true if authorization succeeded.
+   */
   public async authorize(req: IncomingMessage, res: ServerResponse): Promise<boolean> {
     function badRequest() {
       if (res) {
@@ -240,6 +248,12 @@ export class MikroRest {
       res.end(JSON.stringify(body ?? { "status": "ok" }))
     }
   }
+  /**
+ * Send a HTML response. If body is not provided, it will send an empty response with status 200,ok.
+ * @param res 
+ * @param body A html document
+ * @param code response status code, default is 200
+ */
   public sendHtml(res?: ServerResponse, body?: string, code: number = 200) {
     if (res) {
       res.statusCode = code
@@ -247,6 +261,12 @@ export class MikroRest {
       res.end(body ?? "")
     }
   }
+  /**
+ * Send a plaintext response. If body is not provided, it will send a an empty string with status 200,ok.
+ * @param res 
+ * @param body some plaintext
+ * @param code response status code, default is 200
+ */
   public sendPlain(res?: ServerResponse, text?: string, code: number = 200) {
     if (res) {
       res.statusCode = code
@@ -254,6 +274,15 @@ export class MikroRest {
       res.end(text ?? "")
     }
   }
+
+  /**
+    * Send a binary response. If is not provided, it will send a default response with status "ok".
+    * @param res 
+    * @param buffer: contents to send
+    * @param code response status code, default is 200
+    * @param contentType: content type of the response, default is "application/octet-stream"
+    * @throws Error if res or buffer is not provided
+    */
   public sendBuffer(res?: ServerResponse, buffer?: Buffer, code: number = 200, contentType: string = "application/octet-stream") {
     if (res && buffer) {
       res.statusCode = code
@@ -263,6 +292,12 @@ export class MikroRest {
       this.error(res, 400, badRequest)
     }
   }
+  /**
+   * Send an error response
+   * @param res 
+   * @param code code (defaults to 500)
+   * @param text text to send, defaults to "internal server error"
+   */
   public error(res?: ServerResponse, code?: number, text?: string) {
     logger.error("Error: " + text)
     if (res) {
@@ -273,8 +308,10 @@ export class MikroRest {
   }
 
   /** 
-* Send raw file from client/dist/
-* */
+  * Send raw file from static dir. If more than one static dir was added, they are searched in the sequence, they were added.
+  * Some sanitizing is performed: Directory traversal ands special characters are not allowed. If the file is not found,
+  * 404 "not found" is sent.
+  * */
   private handleFile(res: ServerResponse, url: URL) {
     let file = url.pathname
     if (!file || file === '/' || file === '') {
