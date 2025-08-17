@@ -9,28 +9,7 @@ Use for proof-of concepts, simple private servers and so on.
 
 ## Use
 
-```typescript
-import {MikroRest} from '@rgwch/mikrorest'
-const server=new MikroRest()
-server.addStaticDir(path.join(__dirname, "..", "..", "client", "dist"));
-// Sample route. Call with: http://localhost:3339/temperature?date=2025/08/12
-server.addRoute("get", "/temperature", async (req, res) => {
-  const params=server.getParams(req)
-  if(params.get("date")=="2025/08/12"){
-    server.sendJson(res, {
-      "temperature": "hot"
-    })
-  }else{
-    server.sendJson(res, {
-      "temperature": "don't know"
-    })
-  }
-  return false
-  });
-server.start();
-
-
-```
+see src/demo.ts. Run with `npx ts-node src/demo.ts`
 
 ## API
 
@@ -60,13 +39,14 @@ export type MikroRestOptions = {
 public constructor(options?:MoktoRestOptions)
 
   /**
-   * Adds a new route to the MikroRest instance. If the method is called several times with the same method
-     and path, handlers are just appended to existing.
-   * @param method The HTTP method for the route (GET, POST, OPTIONBS, PUT, DELETE)
+   * Adds a new route to the MikroRest instance. 
+   * If the method is called several times with the same method and path, 
+   * handlers are just appended to existing.
+   * @param method The HTTP method for the route (GET, POST, OPTIONS, PUT, DELETE)
    * @param path The path for the route, starting with /
    * @param handlers The handler functions for the route, If more than one handler is supplied,
      handlers are called in the order given.
-   * If a handler returns true, the next handler of tze chain is called, else the call is terminated
+   * If a handler returns true, the next handler of the chain is called, else the call is terminated
    * @throws Error if parameters are wrong
    */
   public addRoute(method: MikroRestMethod, path: string, ...handlers: Array<MikroRestHandler>)
@@ -76,25 +56,13 @@ public constructor(options?:MoktoRestOptions)
    * @param dir 
    * @throws Error if the directory does not exist
    */
-  public addStaticDir(dir: string) {
-    if (!dir || !existsSync(dir)) {
-      throw new Error("Directory does not exist: " + dir);
-    }
-    this.staticDirs.push(dir);
-    logger.info(`Static directory added: ${dir}`);
-  }
-
+  public addStaticDir(dir: string) 
 /**
    * Clears all routes and static directories
    */
-  public clearRoutes() {
-    this.routes = new Map<string, MikroRestRoute>();
-    this.staticDirs = [];
-    logger.info("All routes and static dirs cleared");
-  }
+  public clearRoutes() 
 
-  
- 
+   
   /**
    * Launch the server
    */
