@@ -170,7 +170,7 @@ export class MikroRest {
       if (this.allowedOrigins.includes("*") || this.allowedOrigins.includes(origin)) {
         res.setHeader('Access-Control-Allow-Origin', origin);
       } else {
-        logger.warning(`Origin not allowed: ${origin}`);
+        logger.warning(`Origin not allowed: ${origin} serving ${req.url}`);
         res.setHeader('Access-Control-Allow-Origin', '/'); // or set to a specific allowed origin
       }
 
