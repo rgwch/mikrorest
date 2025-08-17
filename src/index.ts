@@ -235,6 +235,28 @@ export class MikroRest {
       return badRequest();
     }
   }
+
+  public readJsonBody(req: IncomingMessage, res?: ServerResponse): Promise<any> {
+    return new Promise((resolve, reject) => {
+      if (req) {
+        let body = "";
+        req.on("data", (chunk) => {
+          body += chunk;
+        });
+        req.on("end", () => {
+          try {
+            const json = JSON.parse(body);
+            resolve(json);
+          } catch (err) {
+            reject(err);
+          }
+        });
+      } else {
+        reject(new Error("No IncomingMessage object provided"));
+      }
+    });
+  }
+
   /**
    * Send a JSON response. If body is not provided, it will send a default response with status "ok".
    * @param res 
