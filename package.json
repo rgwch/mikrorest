@@ -3,6 +3,11 @@
   "private": false,
   "version": "0.4.6",
   "description": "A minimal REST server",
+  "keywords": [
+    "rest",
+    "typescript",
+    "server"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",

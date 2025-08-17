@@ -96,3 +96,8 @@ public constructor(options?:MoktoRestOptions)
 ## Tests
 
 Tests were created by Github Copilot. See tests/README.md
+
+## Limitations
+
+No path parameters, only query parameters. Things like `http://localhost:3339/user/{name}/any?/load` will not work with mikrorest. Use `http://localhost:3339/user/load?name=name&any=thing` instead. 
+Or use a full featured framework like [Express.js](https://expressjs.com/) or [Koa.js](https://koajs.com/#introduction).
