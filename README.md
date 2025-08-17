@@ -70,6 +70,15 @@ public constructor(options?:MoktoRestOptions)
 
   /** Some convenience methods */
 
+/**
+   * Read a POST request body as JSON
+   * @param req 
+   * @param res 
+   * @returns a JSON object
+   * @throws Error if the request body is not valid JSON
+   */
+  public readJsonBody(req: IncomingMessage, res?: ServerResponse): Promise<any> 
+
  /** Get the URL from the request */
   public getUrl(req: IncomingMessage): URL {
     return new URL(req.url!, `http://${req.headers.host}`);

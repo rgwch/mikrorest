@@ -236,6 +236,13 @@ export class MikroRest {
     }
   }
 
+  /**
+   * Read the request body as JSON
+   * @param req 
+   * @param res 
+   * @returns a JSON object
+   * @throws Error if the request body is not valid JSON
+   */
   public readJsonBody(req: IncomingMessage, res?: ServerResponse): Promise<any> {
     return new Promise((resolve, reject) => {
       if (req) {
