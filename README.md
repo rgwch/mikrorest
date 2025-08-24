@@ -89,17 +89,52 @@ public constructor(options?:MoktoRestOptions)
     return this.getUrl(req).searchParams;
   }
 
-  /** Send JSON answer */
-  public sendJson(res?: ServerResponse, body?: any, code: number = 200)
+  /**
+   * Send a JSON response. If body is not provided, it will 
+   * send  a default response with status "ok".
+   * @param res 
+   * @param body
+   * @param headers optional headers to set (key-value pairs). 
+   *        Content-Type is set automatically to "application/json"
+   * @param code response status code, default is 200
+   */
+  public sendJson(res?: ServerResponse, body?: any, code: number = 200, headers?: { [key: string]: string })
+   
+  /**
+ * Send a HTML response. If body is not provided, it will 
+ * send an empty response with status 200,ok.
+ * @param res 
+ * @param body A html document
+ * @param headers optional headers to set (key-value pairs). 
+ *                Content-Type is set automatically to "text/html; charset=utf-8"
+ * @param code response status code, default is 200
+ */
+  public sendHtml(res?: ServerResponse, body?: string, code: number = 200, headers?: { [key: string]: string }) 
 
-  /** Send HTML answer */
-  public sendHtml(res?: ServerResponse, body?: string, code: number = 200)
+/**
+ * Send a plaintext response. If body is not provided, it will 
+ * send a an empty string with status 200,ok.
+ * @param res 
+ * @param body some plaintext
+ * @param headers optional headers to set (key-value pairs). 
+ *        Content-Type is set automatically to "text/plain"
+ * @param code response status code, default is 200
+ */
+  public sendPlain(res?: ServerResponse, text?: string, code: number = 200, headers?: { [key: string]: string }) 
 
-  /** Send plaintext asnwer */
-  public sendPlain(res?: ServerResponse, text?: string, code: number = 200)
 
-  /** Send binary answer */
-   public sendBuffer(res?: ServerResponse, buffer?: Buffer, code: number = 200, contentType: string = "application/octet-stream") 
+/**
+ * Send a binary response. If is not provided, it will send 
+ * a default response with status "ok".
+  * @param res 
+  * @param buffer: contents to send
+  * @param code response status code, default is 200
+  * @param headers optional headers to set (key-value pairs). 
+  *        Content-Type is set automatically to "application/octet-stream" if not provided
+  * @throws Error if res or buffer is not provided
+*/
+  public sendBuffer(res?: ServerResponse, buffer?: Buffer, code: number = 200, headers?: { [key: string]: string }) 
+   
 ```
   
 ## Tests
