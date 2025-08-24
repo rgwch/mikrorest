@@ -14,6 +14,11 @@ see src/demo.ts. Run with `npm run demo` or `npx ts-node src/demo.ts`
 ## API
 
 ``` typescript
+/**
+ *  The handler processes a request. It must either send an answer or return true to indicate, the next handler 
+ *  should further process this request. If none oif the handler sends a response, the conection will seem to "hang".
+ *  A minimal response can just be: "server.sendPlain(res)", which will return "200,ok" with an empty body.
+ **/
 export type MikroRestHandler = (req: IncomingMessage, res: ServerResponse) => Promise<boolean>;
 
 export interface MikroRestRoute {
@@ -36,7 +41,7 @@ export type MikroRestOptions = {
  * Create a new MikroRest Server. Options can be empty or contain any of the above parameters.
    Default port is 3339, if none is given.
  */
-public constructor(options?:MoktoRestOptions)
+public constructor(options?:MikroRestOptions)
 
   /**
    * Adds a new route to the MikroRest instance. 
