@@ -16,7 +16,7 @@ see src/demo.ts. Run with `npm run demo` or `npx ts-node src/demo.ts`
 ``` typescript
 /**
  *  The handler processes a request. It must either send an answer or return true to indicate, the next handler 
- *  should further process this request. If none oif the handler sends a response, the conection will seem to "hang".
+ *  should further process this request. If none of the handlers sends a response, the conection will seem to "hang".
  *  A minimal response can just be: "server.sendPlain(res)", which will return "200,ok" with an empty body.
  **/
 export type MikroRestHandler = (req: IncomingMessage, res: ServerResponse) => Promise<boolean>;
@@ -46,7 +46,7 @@ public constructor(options?:MikroRestOptions)
   /**
    * Adds a new route to the MikroRest instance. 
    * If the method is called several times with the same method and path, 
-   * handlers are just appended to existing.
+   * handlers are just appended to existing (and are executed in that order if the ropute is called later).
    * @param method The HTTP method for the route (GET, POST, OPTIONS, PUT, DELETE)
    * @param path The path for the route, starting with /
    * @param handlers The handler functions for the route, If more than one handler is supplied,
@@ -57,7 +57,7 @@ public constructor(options?:MikroRestOptions)
   public addRoute(method: MikroRestMethod, path: string, ...handlers: Array<MikroRestHandler>)
 
    /**
-   * Add a directory for static files
+   * Add a directory for static files. Can be called several times to add more than one directoryx for static files
    * @param dir 
    * @throws Error if the directory does not exist
    */
