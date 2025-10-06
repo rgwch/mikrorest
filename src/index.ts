@@ -267,7 +267,6 @@ export class MikroRest {
    /**
    * Read the request body as Buffer
    * @param req 
-   * @param res 
    * @returns a Buffer object
    * @throws Error if the request body is not valid
    */
@@ -328,7 +327,7 @@ export class MikroRest {
   /**
    * Send a plaintext response. If body is not provided, it will send a an empty string with status 200,ok.
    * @param res 
-   * @param body some plaintext
+   * @param text some plaintext
    * @param headers optional headers to set (key-value pairs). Content-Type is set automatically to "text/plain"
    * @param code response status code, default is 200
    */
@@ -348,7 +347,7 @@ export class MikroRest {
   /**
     * Send a binary response. If is not provided, it will send a default response with status "ok".
     * @param res 
-    * @param buffer: contents to send
+    * @param buffer contents to send
     * @param code response status code, default is 200
     * @param headers optional headers to set (key-value pairs). Content-Type is set automatically to "application/octet-stream" if not provided
     * @throws Error if res or buffer is not provided
