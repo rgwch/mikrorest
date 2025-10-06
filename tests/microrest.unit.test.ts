@@ -177,7 +177,7 @@ describe('MikroRest Unit Tests', () => {
                 mikroRest.sendPlain(mockRes, text, 202);
 
                 expect(mockRes.statusCode).toBe(202);
-                expect(mockRes.setHeader).toHaveBeenCalledWith('content-type', 'text/plain');
+                expect(mockRes.setHeader).toHaveBeenCalledWith('Content-Type', 'text/plain');
                 expect(mockRes.end).toHaveBeenCalledWith(text);
             });
 
@@ -201,7 +201,7 @@ describe('MikroRest Unit Tests', () => {
 
             it('should send buffer response with custom content type', () => {
                 const buffer = Buffer.from('test buffer');
-                mikroRest.sendBuffer(mockRes, buffer, 203, 'application/pdf');
+                mikroRest.sendBuffer(mockRes, buffer, 203, { 'Content-Type': 'application/pdf' });
 
                 expect(mockRes.statusCode).toBe(203);
                 expect(mockRes.setHeader).toHaveBeenCalledWith('Content-Type', 'application/pdf');
@@ -392,6 +392,100 @@ describe('MikroRest Unit Tests', () => {
             expect(() => {
                 mikroRest.addRoute('get', '/sync-promise', syncHandler);
             }).not.toThrow();
+        });
+    });
+
+    describe('readBodyBuffer', () => {
+        it('should read request body as Buffer', async () => {
+            const testData = 'Hello, World!';
+            const mockReq = {
+                on: jest.fn((event, callback) => {
+                    if (event === 'data') {
+                        // Simulate receiving data chunks
+                        setTimeout(() => callback(Buffer.from(testData)), 0);
+                    } else if (event === 'end') {
+                        // Simulate end event
+                        setTimeout(() => callback(), 10);
+                    }
+                })
+            } as any;
+
+            const result = await mikroRest.readBodyBuffer(mockReq);
+
+            expect(result).toBeInstanceOf(Buffer);
+            expect(result.toString()).toBe(testData);
+            expect(mockReq.on).toHaveBeenCalledWith('data', expect.any(Function));
+            expect(mockReq.on).toHaveBeenCalledWith('end', expect.any(Function));
+        });
+
+        it('should handle multiple data chunks', async () => {
+            const chunk1 = 'Hello, ';
+            const chunk2 = 'World!';
+            const mockReq = {
+                on: jest.fn((event, callback) => {
+                    if (event === 'data') {
+                        // Simulate receiving multiple data chunks
+                        setTimeout(() => callback(Buffer.from(chunk1)), 0);
+                        setTimeout(() => callback(Buffer.from(chunk2)), 5);
+                    } else if (event === 'end') {
+                        // Simulate end event
+                        setTimeout(() => callback(), 10);
+                    }
+                })
+            } as any;
+
+            const result = await mikroRest.readBodyBuffer(mockReq);
+
+            expect(result).toBeInstanceOf(Buffer);
+            expect(result.toString()).toBe(chunk1 + chunk2);
+        });
+
+        it('should handle binary data', async () => {
+            const binaryData = Buffer.from([0x48, 0x65, 0x6c, 0x6c, 0x6f]); // "Hello" in binary
+            const mockReq = {
+                on: jest.fn((event, callback) => {
+                    if (event === 'data') {
+                        setTimeout(() => callback(binaryData), 0);
+                    } else if (event === 'end') {
+                        setTimeout(() => callback(), 10);
+                    }
+                })
+            } as any;
+
+            const result = await mikroRest.readBodyBuffer(mockReq);
+
+            expect(result).toBeInstanceOf(Buffer);
+            expect(result).toEqual(binaryData);
+            expect(result.toString()).toBe('Hello');
+        });
+
+        it('should handle empty request body', async () => {
+            const mockReq = {
+                on: jest.fn((event, callback) => {
+                    if (event === 'data') {
+                        // No data chunks sent
+                    } else if (event === 'end') {
+                        setTimeout(() => callback(), 10);
+                    }
+                })
+            } as any;
+
+            const result = await mikroRest.readBodyBuffer(mockReq);
+
+            expect(result).toBeInstanceOf(Buffer);
+            expect(result.length).toBe(0);
+        });
+
+        it('should reject when no IncomingMessage is provided', async () => {
+            await expect(mikroRest.readBodyBuffer(null as any))
+                .rejects
+                .toThrow('No IncomingMessage object provided');
+        });
+
+        it('should reject when undefined IncomingMessage is provided', async () => {
+            await expect(mikroRest.readBodyBuffer(undefined as any))
+                .rejects
+                .toThrow('No IncomingMessage object provided');
         });
     });
 });
