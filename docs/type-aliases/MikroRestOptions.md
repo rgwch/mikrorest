@@ -1,4 +1,4 @@
-[**@rgwch/mikrorest v0.5.5**](../README.md)
+[**@rgwch/mikrorest v0.6.0**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **MikroRestOptions** = `object`
 
-Defined in: index.ts:22
+Defined in: index.ts:34
 
 ## Properties
 
@@ -16,7 +16,9 @@ Defined in: index.ts:22
 
 > `optional` **allowedHeadersDevel**: `string`[]
 
-Defined in: index.ts:24
+Defined in: index.ts:39
+
+CORS settings: Allowed headers, methods and origins for development and production mode.
 
 ***
 
@@ -24,7 +26,7 @@ Defined in: index.ts:24
 
 > `optional` **allowedHeadersProd**: `string`[]
 
-Defined in: index.ts:27
+Defined in: index.ts:42
 
 ***
 
@@ -32,7 +34,7 @@ Defined in: index.ts:27
 
 > `optional` **allowedMethodsDevel**: `string`[]
 
-Defined in: index.ts:25
+Defined in: index.ts:40
 
 ***
 
@@ -40,7 +42,7 @@ Defined in: index.ts:25
 
 > `optional` **allowedMethodsProd**: `string`[]
 
-Defined in: index.ts:28
+Defined in: index.ts:43
 
 ***
 
@@ -48,7 +50,7 @@ Defined in: index.ts:28
 
 > `optional` **allowedOriginsDevel**: `string`[]
 
-Defined in: index.ts:26
+Defined in: index.ts:41
 
 ***
 
@@ -56,7 +58,7 @@ Defined in: index.ts:26
 
 > `optional` **allowedOriginsProd**: `string`[]
 
-Defined in: index.ts:29
+Defined in: index.ts:44
 
 ***
 
@@ -64,4 +66,4 @@ Defined in: index.ts:29
 
 > `optional` **port**: `number`
 
-Defined in: index.ts:23
+Defined in: index.ts:35

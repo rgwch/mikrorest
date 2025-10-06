@@ -1,4 +1,4 @@
-[**@rgwch/mikrorest v0.5.5**](../README.md)
+[**@rgwch/mikrorest v0.6.0**](../README.md)
 
 ***
 
@@ -8,4 +8,6 @@
 
 > **MikroRestMethod** = `"get"` \| `"post"` \| `"put"` \| `"delete"` \| `"options"`
 
-Defined in: index.ts:15
+Defined in: index.ts:21
+
+The HTTP methods supported by MikroRest

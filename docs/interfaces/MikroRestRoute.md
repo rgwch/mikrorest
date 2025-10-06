@@ -1,4 +1,4 @@
-[**@rgwch/mikrorest v0.5.5**](../README.md)
+[**@rgwch/mikrorest v0.6.0**](../README.md)
 
 ***
 
@@ -6,7 +6,12 @@
 
 # Interface: MikroRestRoute
 
-Defined in: index.ts:16
+Defined in: index.ts:28
+
+A route definition for MikroRest
+The path must begin with /
+The method is case-insensitive and must be one of: GET, POST, PUT, DELETE, OPTIONS
+Handlers are called in the order given. If a handler returns true, the next handler of the chain is called, else the call is terminated.
 
 ## Properties
 
@@ -14,7 +19,7 @@ Defined in: index.ts:16
 
 > **handlers**: [`MikroRestHandler`](../type-aliases/MikroRestHandler.md)[]
 
-Defined in: index.ts:19
+Defined in: index.ts:31
 
 ***
 
@@ -22,7 +27,7 @@ Defined in: index.ts:19
 
 > **method**: [`MikroRestMethod`](../type-aliases/MikroRestMethod.md)
 
-Defined in: index.ts:17
+Defined in: index.ts:29
 
 ***
 
@@ -30,4 +35,4 @@ Defined in: index.ts:17
 
 > **path**: `string`
 
-Defined in: index.ts:18
+Defined in: index.ts:30
