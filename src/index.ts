@@ -226,7 +226,7 @@ export class MikroRest {
   }
 
   /**
-   * Built-in authorization: Check header for Bearer or Token and a key supplied in MIKROREST_API_KEYS.
+   * Built-in authorization: Check header for Bearer or Token and a key supplied in the environment variable MIKROREST_API_KEYS.
    * To use, simply prepend server.authorize to your handler in a route definition.
    * @param req 
    * @param res 
