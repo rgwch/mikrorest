@@ -3,16 +3,28 @@ import { logger } from "./logger";
 const pck = require('../package.json')
 import { createReadStream } from "fs";
 import path from "path";
-// for build-in authorization, set API_KEYS in environment
-const api_keys = process.env.API_KEYS?.split(",") || []
 
 const serverError = "Internal Server Error"
 const badRequest = "Bad Request"
 const notFound = "Not Found"
 import { existsSync } from "fs";
 
+/**
+ * A handler function for a route. It receives the IncomingMessage and ServerResponse objects.
+ * It must return a Promise that resolves to true if the next handler should be called, or false to stop processing.
+ * The handler must have answered the request, if it returns false. (Otherwise, the users's browser will hang).
+ */
 export type MikroRestHandler = (req: IncomingMessage, res: ServerResponse) => Promise<boolean>;
+/**
+ * The HTTP methods supported by MikroRest
+ */
 export type MikroRestMethod = "get" | "post" | "put" | "delete" | "options";
+/**
+ * A route definition for MikroRest
+ * The path must begin with /
+ * The method is case-insensitive and must be one of: GET, POST, PUT, DELETE, OPTIONS
+ * Handlers are called in the order given. If a handler returns true, the next handler of the chain is called, else the call is terminated.
+ */
 export interface MikroRestRoute {
   method: MikroRestMethod; // The HTTP method for the route
   path: string; // The path for the route
@@ -21,6 +33,9 @@ export interface MikroRestRoute {
 
 export type MikroRestOptions = {
   port?: number; // Port number for the server
+  /**
+   * CORS settings: Allowed headers, methods and origins for development and production mode.
+   */
   allowedHeadersDevel?: string[]; // Allowed headers in development mode
   allowedMethodsDevel?: string[]; // Allowed methods in development mode
   allowedOriginsDevel?: string[]; // Allowed origins in development mode
@@ -47,10 +62,8 @@ export class MikroRest {
   ]
   private allowedHeadersProd: string[] = [...this.allowedHeadersDevel, 'X-Requested-With', 'Accept', 'Origin', 'Referer']
   private allowedMethodsProd: string[] = [...this.allowedMethodsDevel]
-  private allowedOriginsProd: string[] = [
-    ''
-  ]
-  // private routes: MikroRestRoute[] = [];
+  private allowedOriginsProd: string[] = ['']
+  
   private routes: Map<string, MikroRestRoute> = new Map();
 
   private staticDirs: string[] = [
@@ -58,7 +71,7 @@ export class MikroRest {
   ];
 
   /**
-   * The constructor creates usable defaults for the MikroRest instance. Modify as needed with options 
+   * The constructor creates practical defaults for the MikroRest instance. Modify as needed with options 
    * @param options Optional configuration for the MikroRest instance.
    * 
    */
@@ -118,7 +131,7 @@ export class MikroRest {
 
   /**
    * Add a directory for static files
-   * @param dir 
+   * @param dir absolute path to the directory, e.g. path.join(__dirname, "..", "client", "dist")
    * @throws Error if the directory does not exist
    */
   public addStaticDir(dir: string) {
@@ -141,7 +154,7 @@ export class MikroRest {
   /**
    * Convenience function to get the URL from the request
    * @param req 
-   * @returns 
+   * @returns the URL object
    */
   public getUrl(req: IncomingMessage): URL {
     return new URL(req.url!, `http://${req.headers.host}`);
@@ -156,9 +169,18 @@ export class MikroRest {
     return this.getUrl(req).searchParams;
   }
 
+  /**
+   * Get all routes as a Map
+   * @returns all routes defined so far
+   */
   public getRoutes(): Map<string, MikroRestRoute> {
     return this.routes;
   }
+
+  /**
+   * Launch the server. routes and static directories can be added before ore after calling this method.
+   * @returns the HTTP server instance
+   */
   public start() {
 
     return createServer(async (req: IncomingMessage, res: ServerResponse) => {
@@ -204,7 +226,7 @@ export class MikroRest {
   }
 
   /**
-   * Built-in authorization: Check header for Bearer or Token and a key supplied in API_KEYS.
+   * Built-in authorization: Check header for Bearer or Token and a key supplied in MIKROREST_API_KEYS.
    * To use, simply prepend server.authorize to your handler in a route definition.
    * @param req 
    * @param res 
@@ -219,7 +241,7 @@ export class MikroRest {
       }
       return false;
     }
-    const api_keys = process.env.API_KEYS?.split(",") || []
+    const api_keys = process.env.MIKROREST_API_KEYS?.split(",") || process.env.API_KEYS?.split(",") || []
 
     const auth = req.headers.authorization
     if (auth && (auth.startsWith("Token ") || auth.startsWith("Bearer "))) {
@@ -264,12 +286,12 @@ export class MikroRest {
     });
   }
 
-   /**
-   * Read the request body as Buffer
-   * @param req 
-   * @returns a Buffer object
-   * @throws Error if the request body is not valid
-   */
+  /**
+  * Read the request body as Buffer
+  * @param req 
+  * @returns a Buffer object
+  * @throws Error if the request body is not valid
+  */
   public readBodyBuffer(req: IncomingMessage): Promise<Buffer> {
     return new Promise((resolve, reject) => {
       if (req) {
@@ -284,7 +306,7 @@ export class MikroRest {
         reject(new Error("No IncomingMessage object provided"));
       }
     });
-  } 
+  }
   /**
    * Send a JSON response. If body is not provided, it will send a default response with status "ok".
    * @param res 
@@ -325,7 +347,7 @@ export class MikroRest {
     }
   }
   /**
-   * Send a plaintext response. If body is not provided, it will send a an empty string with status 200,ok.
+   * Send a plaintext response. If text is not provided, it will send a an empty string with status 200,ok.
    * @param res 
    * @param text some plaintext
    * @param headers optional headers to set (key-value pairs). Content-Type is set automatically to "text/plain"
@@ -396,8 +418,9 @@ export class MikroRest {
   /** 
   * Send raw file from static dir. If more than one static dir was added, they are searched in the sequence, they were added.
   * Some sanitizing is performed: Directory traversal ands special characters are not allowed. If the file is not found,
-  * 404 "not found" is sent.
-  * */
+  * 404 "not found" is sent. If a file is found, it is sent with the correct content-type header according to the file extension.
+  * (known types are: js, css, svg, jpg, txt, pdf. All other files are sent as "text/html; charset=utf-8")
+  **/
   private handleFile(res: ServerResponse, url: URL) {
     let file = url.pathname
     if (!file || file === '/' || file === '') {
