@@ -264,6 +264,28 @@ export class MikroRest {
     });
   }
 
+   /**
+   * Read the request body as Buffer
+   * @param req 
+   * @param res 
+   * @returns a Buffer object
+   * @throws Error if the request body is not valid
+   */
+  public readBodyBuffer(req: IncomingMessage): Promise<Buffer> {
+    return new Promise((resolve, reject) => {
+      if (req) {
+        const chunks: Buffer[] = [];
+        req.on("data", (chunk) => {
+          chunks.push(chunk);
+        });
+        req.on("end", () => {
+          resolve(Buffer.concat(chunks));
+        });
+      } else {
+        reject(new Error("No IncomingMessage object provided"));
+      }
+    });
+  } 
   /**
    * Send a JSON response. If body is not provided, it will send a default response with status "ok".
    * @param res 
