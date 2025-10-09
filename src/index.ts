@@ -289,13 +289,13 @@ export class MikroRest {
   /**
    * Let Mikrorest handle Login for you. Supply a function that checks username and password and returns true if they are valid.
    * it will setup a POST route at loginPath (e.g. /login) that expects a JSON body with username and password.
-   * If the credentials are valid, it will return a tokwen (a random string) that can be used for authorization in subsequent requests.
-   * The token is valid for the duration of the server process and is printed to the console. You can use it in the Authorization
-   * @param loginPath
+   * If the credentials are valid, it will return a JWT that can be used for authorization in subsequent requests.
+   * The token is valid for MIKROREST_JWT_EXPIRATION minutes. You can use it in the Authorization header as "Token <token>".
+   * @param loginRoute
    * @param authenticate 
    */
-  public handleLogin(loginPath: string, authenticate: (username: string, password: string) => boolean) {
-    this.addRoute("post", loginPath, async (req: IncomingMessage, res: ServerResponse) => {
+  public handleLogin(loginRoute: string, authenticate: (username: string, password: string) => boolean) {
+    this.addRoute("post", loginRoute, async (req: IncomingMessage, res: ServerResponse) => {
       try {
         const body = await this.readJsonBody(req, res);
         if (body && body.username && body.password) {
@@ -305,8 +305,9 @@ export class MikroRest {
             if (!secret) {
               throw new Error("MIKROREST_JWT_SECRET environment variable not set");
             }
-            // Create a token with username and expiration (e.g. 1 hour)
-            const payload = { username: body.username, exp: Math.floor(Date.now() / 1000) + 3600 };
+            // Create a token with username and expiration (e.g. 1 minute)
+            const expiration = parseInt(process.env.MIKROREST_JWT_EXPIRATION || '60'); // in minutes
+            const payload = { username: body.username, exp: Math.floor(Date.now() / 1000) + expiration * 60 };
             const token = jwt.encode(payload, secret);
             // Print the token to the console
             logger.info(`User ${body.username} logged in, token: ${token}`);
@@ -325,7 +326,7 @@ export class MikroRest {
         return false; // Stop further processing
       }
     });
-    logger.info(`Login route added at ${loginPath}`);
+    logger.info(`Login route added at ${loginRoute}`);
 
   }
 
