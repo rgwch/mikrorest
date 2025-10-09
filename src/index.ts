@@ -45,6 +45,7 @@ export type MikroRestOptions = {
 };
 
 export class MikroRest {
+  private server: any
   private mode = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test" || process.env.NODE_ENV == "debug") ? "development" : "production";
   private port: number;
   private allowedOrigins: string[] = []
@@ -184,7 +185,7 @@ export class MikroRest {
    */
   public start() {
 
-    return createServer(async (req: IncomingMessage, res: ServerResponse) => {
+    this.server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
       const method = req.method?.toLowerCase() ?? "get"
       const origin = req.headers.origin ?? "";
 
@@ -224,8 +225,16 @@ export class MikroRest {
     }).listen(this.port, () => {
       logger.info(`Server listening on port ${this.port} in ${this.mode} mode`);
     });
+    return this.server;
   }
 
+  public async stop() {
+    if (this.server) {
+      this.server.close(() => {
+        logger.info("Server stopped");
+      });
+    }
+  }
   /**
    * Built-in authorization: Check header for Bearer or Token and a key supplied in the environment variable MIKROREST_API_KEYS.
    * To use, simply prepend server.authorize to your handler in a route definition.
