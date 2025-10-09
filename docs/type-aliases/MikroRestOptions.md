@@ -16,9 +16,9 @@ Defined in: index.ts:34
 
 > `optional` **allowedHeadersDevel**: `string`[]
 
-Defined in: index.ts:39
+Defined in: index.ts:38
 
-CORS settings: Allowed headers, methods and origins for development and production mode.
+CORS settings: Allowed headers headers in development mode (default: ['Content-Type', 'Authorization'])
 
 ***
 
@@ -26,7 +26,9 @@ CORS settings: Allowed headers, methods and origins for development and producti
 
 > `optional` **allowedHeadersProd**: `string`[]
 
-Defined in: index.ts:42
+Defined in: index.ts:44
+
+CORS settings: Allowed headers headers in production mode (default: ['Content-Type', 'Authorization'])
 
 ***
 
@@ -36,13 +38,17 @@ Defined in: index.ts:42
 
 Defined in: index.ts:40
 
+CORS settings: Allowed methods in development mode (default: ['GET', 'POST', 'OPTIONS'])
+
 ***
 
 ### allowedMethodsProd?
 
 > `optional` **allowedMethodsProd**: `string`[]
 
-Defined in: index.ts:43
+Defined in: index.ts:46
+
+CORS settings: Allowed methods in production mode (default: ['GET', 'POST', 'OPTIONS'])
 
 ***
 
@@ -50,7 +56,9 @@ Defined in: index.ts:43
 
 > `optional` **allowedOriginsDevel**: `string`[]
 
-Defined in: index.ts:41
+Defined in: index.ts:42
+
+CORS settings: Allowed origins in development mode (default: ['*'])
 
 ***
 
@@ -58,7 +66,9 @@ Defined in: index.ts:41
 
 > `optional` **allowedOriginsProd**: `string`[]
 
-Defined in: index.ts:44
+Defined in: index.ts:48
+
+CORS settings: Allowed origins in production mode (default: [''])
 
 ***
 
@@ -66,4 +76,6 @@ Defined in: index.ts:44
 
 > `optional` **port**: `number`
 
-Defined in: index.ts:35
+Defined in: index.ts:36
+
+Port number for the server (default: 3339 or value of environment variable MIKROREST_PORT)

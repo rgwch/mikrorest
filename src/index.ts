@@ -32,16 +32,20 @@ export interface MikroRestRoute {
 }
 
 export type MikroRestOptions = {
-  port?: number; // Port number for the server
-  /**
-   * CORS settings: Allowed headers, methods and origins for development and production mode.
-   */
-  allowedHeadersDevel?: string[]; // Allowed headers in development mode
-  allowedMethodsDevel?: string[]; // Allowed methods in development mode
-  allowedOriginsDevel?: string[]; // Allowed origins in development mode
-  allowedHeadersProd?: string[]; // Allowed headers in production mode
-  allowedMethodsProd?: string[]; // Allowed methods in production mode
-  allowedOriginsProd?: string[]; // Allowed origins in production mode
+  /** Port number for the server (default: 3339 or value of environment variable MIKROREST_PORT) */
+  port?: number;
+  /** CORS settings: Allowed headers headers in development mode (default: ['Content-Type', 'Authorization']) */
+  allowedHeadersDevel?: string[];
+  /** CORS settings: Allowed methods in development mode (default: ['GET', 'POST', 'OPTIONS'])  */
+  allowedMethodsDevel?: string[];
+  /** CORS settings: Allowed origins in development mode (default: ['*']) */
+  allowedOriginsDevel?: string[];
+  /** CORS settings: Allowed headers headers in production mode (default: ['Content-Type', 'Authorization']) */
+  allowedHeadersProd?: string[];
+  /** CORS settings: Allowed methods in production mode (default: ['GET', 'POST', 'OPTIONS'])  */
+  allowedMethodsProd?: string[];
+  /** CORS settings: Allowed origins in production mode (default: ['']) */
+  allowedOriginsProd?: string[];
 };
 
 export class MikroRest {

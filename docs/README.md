@@ -30,7 +30,7 @@ see [docs](_media/globals.md)
 
 ## Tests
 
-Tests were created by Github Copilot. See tests/README.md
+Tests were mostly created by Github Copilot. See tests/README.md
 
 ## Limitations
 
