@@ -106,7 +106,7 @@ Error if the directory does not exist
 
 Defined in: index.ts:235
 
-Built-in authorization: Check header for Bearer or Token and a key supplied in MIKROREST_API_KEYS.
+Built-in authorization: Check header for Bearer or Token and a key supplied in the environment variable MIKROREST_API_KEYS.
 To use, simply prepend server.authorize to your handler in a route definition.
 
 #### Parameters

@@ -19,7 +19,7 @@ see src/demo.ts. Run with `npm run demo` or `npx ts-node src/demo.ts`
 
 ## API
 
-see [docs](docs/globals.md)
+see [docs](_media/globals.md)
 
 ## Tests
 

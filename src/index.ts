@@ -63,12 +63,13 @@ export class MikroRest {
   private allowedHeadersProd: string[] = [...this.allowedHeadersDevel, 'X-Requested-With', 'Accept', 'Origin', 'Referer']
   private allowedMethodsProd: string[] = [...this.allowedMethodsDevel]
   private allowedOriginsProd: string[] = ['']
-  
+
   private routes: Map<string, MikroRestRoute> = new Map();
 
   private staticDirs: string[] = [
     // e.g. path.join(__dirname, "..", "..", 'client', "dist")
   ];
+  private loginRoute = ""
 
   /**
    * The constructor creates practical defaults for the MikroRest instance. Modify as needed with options 
@@ -76,7 +77,7 @@ export class MikroRest {
    * 
    */
   public constructor(options?: MikroRestOptions) {
-    this.port = options?.port || parseInt(process.env.PORT || '3339');
+    this.port = options?.port || parseInt(process.env.MIKROREST_PORT || '3339');
     if (options) {
       this.allowedHeadersDevel = options.allowedHeadersDevel || this.allowedHeadersDevel;
       this.allowedMethodsDevel = options.allowedMethodsDevel || this.allowedMethodsDevel;
@@ -249,13 +250,73 @@ export class MikroRest {
       if (api_keys.includes(key)) {
         return true
       } else {
-        logger.warning("Unauthorized access with key: " + key);
-        return badRequest();
+        try {
+          const jwt = require('jwt-simple');
+          const secret = process.env.MIKROREST_JWT_SECRET
+          if (secret) {
+            const decoded = jwt.decode(key, secret);
+            if (decoded && decoded.exp && decoded.exp > Math.floor(Date.now() / 1000)) {
+              return true;
+            } else {
+              logger.warning("JWT token expired or invalid: " + key);
+              return badRequest();
+            }
+          } else {
+            logger.error("JWT_SECRET environment variable not set");
+            return badRequest();
+          }
+        } catch (err) {
+          logger.warning("Unauthorized access with key: " + key);
+          return badRequest();
+        }
       }
     } else {
       logger.warning("Unauthorized access without key: " + auth);
       return badRequest();
     }
+  }
+
+  /**
+   * Let Mikrorest handle Login for you. Supply a function that checks username and password and returns true if they are valid.
+   * it will setup a POST route at loginPath (e.g. /login) that expects a JSON body with username and password.
+   * If the credentials are valid, it will return a tokwen (a random string) that can be used for authorization in subsequent requests.
+   * The token is valid for the duration of the server process and is printed to the console. You can use it in the Authorization
+   * @param loginPath
+   * @param authenticate 
+   */
+  public handleLogin(loginPath: string, authenticate: (username: string, password: string) => boolean) {
+    this.addRoute("post", loginPath, async (req: IncomingMessage, res: ServerResponse) => {
+      try {
+        const body = await this.readJsonBody(req, res);
+        if (body && body.username && body.password) {
+          if (authenticate(body.username, body.password)) {
+            const jwt = require('jwt-simple');
+            const secret = process.env.MIKROREST_JWT_SECRET
+            if (!secret) {
+              throw new Error("MIKROREST_JWT_SECRET environment variable not set");
+            }
+            // Create a token with username and expiration (e.g. 1 hour)
+            const payload = { username: body.username, exp: Math.floor(Date.now() / 1000) + 3600 };
+            const token = jwt.encode(payload, secret);
+            // Print the token to the console
+            logger.info(`User ${body.username} logged in, token: ${token}`);
+            this.sendJson(res, { token: token });
+            return false; // Stop further processing
+          } else {
+            this.error(res, 401, "Invalid username or password");
+            return false; // Stop further processing
+          }
+        } else {
+          this.error(res, 400, badRequest);
+          return false; // Stop further processing
+        }
+      } catch (err) {
+        this.error(res, 400, "Invalid JSON body");
+        return false; // Stop further processing
+      }
+    });
+    logger.info(`Login route added at ${loginPath}`);
+
   }
 
   /**
