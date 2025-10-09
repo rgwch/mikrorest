@@ -1,4 +1,4 @@
-[**@rgwch/mikrorest v0.7.0**](../README.md)
+[**@rgwch/mikrorest v0.7.2**](../README.md)
 
 ***
 
@@ -146,7 +146,7 @@ Clears all routes and static directories
 
 > **error**(`res?`, `code?`, `text?`, `headers?`): `void`
 
-Defined in: index.ts:469
+Defined in: index.ts:470
 
 Send an error response
 
@@ -238,18 +238,18 @@ the URL object
 
 ### handleLogin()
 
-> **handleLogin**(`loginPath`, `authenticate`): `void`
+> **handleLogin**(`loginRoute`, `authenticate`): `void`
 
 Defined in: index.ts:297
 
 Let Mikrorest handle Login for you. Supply a function that checks username and password and returns true if they are valid.
 it will setup a POST route at loginPath (e.g. /login) that expects a JSON body with username and password.
-If the credentials are valid, it will return a tokwen (a random string) that can be used for authorization in subsequent requests.
-The token is valid for the duration of the server process and is printed to the console. You can use it in the Authorization
+If the credentials are valid, it will return a JWT that can be used for authorization in subsequent requests.
+The token is valid for MIKROREST_JWT_EXPIRATION minutes. You can use it in the Authorization header as "Token <token>".
 
 #### Parameters
 
-##### loginPath
+##### loginRoute
 
 `string`
 
@@ -267,7 +267,7 @@ The token is valid for the duration of the server process and is printed to the 
 
 > **readBodyBuffer**(`req`): `Promise`\<`Buffer`\<`ArrayBufferLike`\>\>
 
-Defined in: index.ts:366
+Defined in: index.ts:367
 
 Read the request body as Buffer
 
@@ -293,7 +293,7 @@ Error if the request body is not valid
 
 > **readJsonBody**(`req`, `res?`): `Promise`\<`any`\>
 
-Defined in: index.ts:339
+Defined in: index.ts:340
 
 Read the request body as JSON
 
@@ -323,7 +323,7 @@ Error if the request body is not valid JSON
 
 > **sendBuffer**(`res?`, `buffer?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:448
+Defined in: index.ts:449
 
 Send a binary response. If is not provided, it will send a default response with status "ok".
 
@@ -363,7 +363,7 @@ Error if res or buffer is not provided
 
 > **sendHtml**(`res?`, `body?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:408
+Defined in: index.ts:409
 
 Send a HTML response. If body is not provided, it will send an empty response with status 200,ok.
 
@@ -399,7 +399,7 @@ optional headers to set (key-value pairs). Content-Type is set automatically to 
 
 > **sendJson**(`res?`, `body?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:388
+Defined in: index.ts:389
 
 Send a JSON response. If body is not provided, it will send a default response with status "ok".
 
@@ -433,7 +433,7 @@ optional headers to set (key-value pairs). Content-Type is set automatically to 
 
 > **sendPlain**(`res?`, `text?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:427
+Defined in: index.ts:428
 
 Send a plaintext response. If text is not provided, it will send a an empty string with status 200,ok.
 
@@ -469,7 +469,7 @@ optional headers to set (key-value pairs). Content-Type is set automatically to 
 
 > **setMaxAge**(`res`, `maxAge`): `void`
 
-Defined in: index.ts:483
+Defined in: index.ts:484
 
 #### Parameters
 
