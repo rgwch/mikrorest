@@ -1,4 +1,4 @@
-[**@rgwch/mikrorest v0.6.0**](../README.md)
+[**@rgwch/mikrorest v0.7.0**](../README.md)
 
 ***
 
@@ -14,7 +14,7 @@ Defined in: index.ts:47
 
 > **new MikroRest**(`options?`): `MikroRest`
 
-Defined in: index.ts:78
+Defined in: index.ts:80
 
 The constructor creates practical defaults for the MikroRest instance. Modify as needed with options
 
@@ -36,7 +36,7 @@ Optional configuration for the MikroRest instance.
 
 > **addRoute**(`method`, `path`, ...`handlers`): `void`
 
-Defined in: index.ts:104
+Defined in: index.ts:106
 
 Adds a new route to the MikroRest instance. 
 If the method is called several times with the same method and path, 
@@ -78,7 +78,7 @@ Error if parameters are wrong
 
 > **addStaticDir**(`dir`): `void`
 
-Defined in: index.ts:137
+Defined in: index.ts:139
 
 Add a directory for static files
 
@@ -104,7 +104,7 @@ Error if the directory does not exist
 
 > **authorize**(`req`, `res`): `Promise`\<`boolean`\>
 
-Defined in: index.ts:235
+Defined in: index.ts:245
 
 Built-in authorization: Check header for Bearer or Token and a key supplied in the environment variable MIKROREST_API_KEYS.
 To use, simply prepend server.authorize to your handler in a route definition.
@@ -131,7 +131,7 @@ true if authorization succeeded.
 
 > **clearRoutes**(): `void`
 
-Defined in: index.ts:148
+Defined in: index.ts:150
 
 Clears all routes and static directories
 
@@ -145,7 +145,7 @@ Clears all routes and static directories
 
 > **error**(`res?`, `code?`, `text?`, `headers?`): `void`
 
-Defined in: index.ts:398
+Defined in: index.ts:468
 
 Send an error response
 
@@ -181,7 +181,7 @@ optional headers to set (key-value pairs). Content-Type is set automatically to 
 
 > **getParams**(`req`): `URLSearchParams`
 
-Defined in: index.ts:168
+Defined in: index.ts:170
 
 Convenience function to get the query parameters from the request
 
@@ -201,7 +201,7 @@ Convenience function to get the query parameters from the request
 
 > **getRoutes**(): `Map`\<`string`, [`MikroRestRoute`](../interfaces/MikroRestRoute.md)\>
 
-Defined in: index.ts:176
+Defined in: index.ts:178
 
 Get all routes as a Map
 
@@ -217,7 +217,7 @@ all routes defined so far
 
 > **getUrl**(`req`): `URL`
 
-Defined in: index.ts:159
+Defined in: index.ts:161
 
 Convenience function to get the URL from the request
 
@@ -235,11 +235,38 @@ the URL object
 
 ***
 
+### handleLogin()
+
+> **handleLogin**(`loginPath`, `authenticate`): `void`
+
+Defined in: index.ts:296
+
+Let Mikrorest handle Login for you. Supply a function that checks username and password and returns true if they are valid.
+it will setup a POST route at loginPath (e.g. /login) that expects a JSON body with username and password.
+If the credentials are valid, it will return a tokwen (a random string) that can be used for authorization in subsequent requests.
+The token is valid for the duration of the server process and is printed to the console. You can use it in the Authorization
+
+#### Parameters
+
+##### loginPath
+
+`string`
+
+##### authenticate
+
+(`username`, `password`) => `boolean`
+
+#### Returns
+
+`void`
+
+***
+
 ### readBodyBuffer()
 
 > **readBodyBuffer**(`req`): `Promise`\<`Buffer`\<`ArrayBufferLike`\>\>
 
-Defined in: index.ts:295
+Defined in: index.ts:365
 
 Read the request body as Buffer
 
@@ -265,7 +292,7 @@ Error if the request body is not valid
 
 > **readJsonBody**(`req`, `res?`): `Promise`\<`any`\>
 
-Defined in: index.ts:268
+Defined in: index.ts:338
 
 Read the request body as JSON
 
@@ -295,7 +322,7 @@ Error if the request body is not valid JSON
 
 > **sendBuffer**(`res?`, `buffer?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:377
+Defined in: index.ts:447
 
 Send a binary response. If is not provided, it will send a default response with status "ok".
 
@@ -335,7 +362,7 @@ Error if res or buffer is not provided
 
 > **sendHtml**(`res?`, `body?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:337
+Defined in: index.ts:407
 
 Send a HTML response. If body is not provided, it will send an empty response with status 200,ok.
 
@@ -371,7 +398,7 @@ optional headers to set (key-value pairs). Content-Type is set automatically to 
 
 > **sendJson**(`res?`, `body?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:317
+Defined in: index.ts:387
 
 Send a JSON response. If body is not provided, it will send a default response with status "ok".
 
@@ -405,7 +432,7 @@ optional headers to set (key-value pairs). Content-Type is set automatically to 
 
 > **sendPlain**(`res?`, `text?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:356
+Defined in: index.ts:426
 
 Send a plaintext response. If text is not provided, it will send a an empty string with status 200,ok.
 
@@ -441,7 +468,7 @@ optional headers to set (key-value pairs). Content-Type is set automatically to 
 
 > **setMaxAge**(`res`, `maxAge`): `void`
 
-Defined in: index.ts:412
+Defined in: index.ts:482
 
 #### Parameters
 
@@ -461,14 +488,26 @@ Defined in: index.ts:412
 
 ### start()
 
-> **start**(): `Server`\<*typeof* `IncomingMessage`, *typeof* `ServerResponse`\>
+> **start**(): `any`
 
-Defined in: index.ts:184
+Defined in: index.ts:186
 
 Launch the server. routes and static directories can be added before ore after calling this method.
 
 #### Returns
 
-`Server`\<*typeof* `IncomingMessage`, *typeof* `ServerResponse`\>
+`any`
 
 the HTTP server instance
+
+***
+
+### stop()
+
+> **stop**(): `Promise`\<`void`\>
+
+Defined in: index.ts:231
+
+#### Returns
+
+`Promise`\<`void`\>
