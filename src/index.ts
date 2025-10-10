@@ -300,8 +300,10 @@ export class MikroRest {
    * it will setup a POST route at loginPath (e.g. /login) that expects a JSON body with username and password.
    * If the credentials are valid, it will return a JWT that can be used for authorization in subsequent requests.
    * The token is valid for MIKROREST_JWT_EXPIRATION minutes. You can use it in the Authorization header as "Token <token>".
-   * @param loginRoute
-   * @param authenticate 
+   * The Login route also accepts a JSON body with { extend: true } to extend the token expiration.
+   * The request must then include the existing token in the Authorization header.
+   * @param loginRoute the path for the login route, e.g. /login
+   * @param authenticate  a function that checks username and password and returns true if they are valid
    */
   public handleLogin(loginRoute: string, authenticate: (username: string, password: string) => boolean) {
     this.addRoute("post", loginRoute, async (req: IncomingMessage, res: ServerResponse) => {
