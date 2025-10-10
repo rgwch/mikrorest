@@ -85,4 +85,57 @@ describe('MikroRest Authentication Tests', () => {
         const protectedData = await protectedResult.json();
         expect(protectedData).toEqual({ message: 'protected content' });
     })
+
+    
+    xit("should extend tokens", async () => {
+        mikroRest.handleLogin("/login", (username, password) => {
+            return username === 'admin' && password === 'password';
+        });
+        const result = await fetch(`http://localhost:${port}/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username: 'admin', password: 'password' })
+        });
+        expect(result.status).toBe(200);
+        const data = await result.json();
+        expect(data).toHaveProperty('token');
+        const token = data.token;
+
+        // Use the returned JWT to access the protected route
+        const protectedResult = await fetch(`http://localhost:${port}/protected`, {
+            headers: {
+                'Authorization': `Token ${token}`
+            }
+        });
+        expect(protectedResult.status).toBe(200);
+        const protectedData = await protectedResult.json();
+        expect(protectedData).toEqual({ message: 'protected content' });
+
+        // Extend the token
+        const extendResult = await fetch(`http://localhost:${port}/login`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Token ${token}`
+            },
+            body: JSON.stringify({ extend: true })
+        });
+        expect(extendResult.status).toBe(200);
+        const extendData = await extendResult.json();
+        expect(extendData).toHaveProperty('token');
+        const extendedToken = extendData.token;
+        expect(extendedToken).not.toBe(token);
+
+        // Use the extended JWT to access the protected route
+        const protectedResult2 = await fetch(`http://localhost:${port}/protected`, {
+            headers: {
+                'Authorization': `Token ${extendedToken}`
+            }
+        });
+        expect(protectedResult2.status).toBe(200);
+        const protectedData2 = await protectedResult2.json();
+        expect(protectedData2).toEqual({ message: 'protected content' });
+    })
+        
 })

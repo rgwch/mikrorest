@@ -269,7 +269,9 @@ export class MikroRest {
           const secret = process.env.MIKROREST_JWT_SECRET
           if (secret) {
             const decoded = jwt.decode(key, secret);
-            if (decoded && decoded.exp && decoded.exp > Math.floor(Date.now() / 1000)) {
+
+            if (decoded && decoded.exp && new Date(decoded.exp) > new Date()) {
+              (req as any).user = decoded; // attach decoded token to request object
               return true;
             } else {
               logger.warning("JWT token expired or invalid: " + key);
@@ -309,20 +311,57 @@ export class MikroRest {
             if (!secret) {
               throw new Error("MIKROREST_JWT_SECRET environment variable not set");
             }
-            // Create a token with username and expiration (e.g. 1 minute)
+            // Create a token with username and expiration (e.g. 1 hour)
             const expiration = parseInt(process.env.MIKROREST_JWT_EXPIRATION || '60'); // in minutes
-            const payload = { username: body.username, exp: Math.floor(Date.now() / 1000) + expiration * 60 };
+            const validUntil = new Date(Date.now() + expiration * 60000);
+            const payload = { username: body.username, exp: validUntil };
             const token = jwt.encode(payload, secret);
             // Print the token to the console
             logger.info(`User ${body.username} logged in, token: ${token}`);
-            this.sendJson(res, { token: token });
+            this.sendJson(res, { token: token, expires: validUntil }); // expiration in minutes
             return false; // Stop further processing
           } else {
             this.error(res, 401, "Invalid username or password");
             return false; // Stop further processing
           }
+        } else if (body.extend) {
+          // Extend token
+          const auth = req.headers.authorization
+          if (auth && (auth.startsWith("Token ") || auth.startsWith("Bearer "))) {
+            let key = auth.split(/\s+/)[1]
+            try {
+              const jwt = require('jwt-simple');
+              const secret = process.env.MIKROREST_JWT_SECRET
+              if (secret) {
+                const decoded = jwt.decode(key, secret);
+                if (decoded && decoded.exp && new Date(decoded.exp) > new Date()) {
+                  // Create a new token with extended expiration
+                  const expiration = parseInt(process.env.MIKROREST_JWT_EXPIRATION || '60'); // in minutes
+                  const validUntil = new Date(Date.now() + expiration * 60000);
+                  const payload = { username: decoded.username, exp: validUntil };
+                  const token = jwt.encode(payload, secret);
+                  logger.info(`Token for user ${decoded.username} extended, new token: ${token}`);
+                  this.sendJson(res, { token: token, expires: validUntil }); // expiration in minutes
+                  return false; // Stop further processing
+                } else {
+                  this.error(res, 401, "Token expired or invalid");
+                  return false; // Stop further processing
+                }
+              } else {
+                this.error(res, 500, "Server not configured for JWT");
+                return false; // Stop further processing  
+              }
+
+            } catch (err) {
+              this.error(res, 400, "Invalid JWT");
+              return false; // Stop further processing
+            }
+          } else {
+            this.error(res, 401, "Authorization header missing");
+            return false; // Stop further processing  
+          }
         } else {
-          this.error(res, 400, badRequest);
+          this.error(res, 400, "Invalid JSON body");
           return false; // Stop further processing
         }
       } catch (err) {
