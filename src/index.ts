@@ -234,8 +234,11 @@ export class MikroRest {
 
   public async stop() {
     if (this.server) {
-      this.server.close(() => {
-        logger.info("Server stopped");
+      return new Promise<void>((resolve) => {
+        this.server.close(() => {
+          logger.info("Server stopped");
+          resolve();
+        });
       });
     }
   }

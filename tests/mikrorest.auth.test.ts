@@ -8,16 +8,23 @@ describe('MikroRest Authentication Tests', () => {
         process.env.NODE_ENV = 'test';
         process.env.MIKROREST_API_KEYS = 'test-key-1,test-key-2';
         process.env.MIKROREST_JWT_SECRET = 'jwt-secret';
-        process.env.MIKROREST_PORT = port.toString(); // Use dynamic port allocation
+        process.env.MIKROREST_PORT = port.toString();
         mikroRest = new MikroRest();
         mikroRest.addRoute('get', '/protected', mikroRest.authorize, async (req, res) => {
             mikroRest.sendJson(res, { message: 'protected content' });
             return false;
         });
         await mikroRest.start();
+        // Small delay to ensure server is fully started
+        await new Promise(resolve => setTimeout(resolve, 100));
     });
+    
     afterEach(async () => {
-        await mikroRest.stop();
+        if (mikroRest) {
+            await mikroRest.stop();
+            // Add a small delay to ensure the server is fully stopped
+            await new Promise(resolve => setTimeout(resolve, 200));
+        }
     });
 
     it('should return 401 for protected route without API key', async () => {
@@ -87,10 +94,14 @@ describe('MikroRest Authentication Tests', () => {
     })
 
     
-    xit("should extend tokens", async () => {
+    it("should extend tokens", async () => {
         mikroRest.handleLogin("/login", (username, password) => {
             return username === 'admin' && password === 'password';
         });
+        
+        // Add a small delay after adding the login route
+        await new Promise(resolve => setTimeout(resolve, 50));
+        
         const result = await fetch(`http://localhost:${port}/login`, {
             method: 'POST',
             headers: {
@@ -117,6 +128,7 @@ describe('MikroRest Authentication Tests', () => {
         const extendResult = await fetch(`http://localhost:${port}/login`, {
             method: 'POST',
             headers: {
+                'Content-Type': 'application/json',
                 'Authorization': `Token ${token}`
             },
             body: JSON.stringify({ extend: true })
@@ -136,6 +148,6 @@ describe('MikroRest Authentication Tests', () => {
         expect(protectedResult2.status).toBe(200);
         const protectedData2 = await protectedResult2.json();
         expect(protectedData2).toEqual({ message: 'protected content' });
-    })
+    });
         
-})
+});
