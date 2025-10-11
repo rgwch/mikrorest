@@ -314,6 +314,7 @@ export class MikroRest {
             const jwt = require('jwt-simple');
             const secret = process.env.MIKROREST_JWT_SECRET
             if (!secret) {
+              logger.error("MIKROREST_JWT_SECRET environment variable not set");
               throw new Error("MIKROREST_JWT_SECRET environment variable not set");
             }
             // Create a token with username and expiration (e.g. 1 hour)
