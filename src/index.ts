@@ -298,19 +298,21 @@ export class MikroRest {
   /**
    * Let Mikrorest handle Login for you. Supply a function that checks username and password and returns true if they are valid.
    * it will setup a POST route at loginRoute (e.g. /login) that expects a JSON body with username and password.
-   * If the credentials are valid, it will return a JWT that can be used for authorization in subsequent requests.
+   * If the credentials are valid, it will return a JWT that can be used for authorization in subsequent requests, 
+   * and an (arbitrary) user object as received from the authenticate-function.
    * The token is valid for MIKROREST_JWT_EXPIRATION minutes. You can use it in the Authorization header as "Token <token>".
    * The Login route also accepts a JSON body with { extend: true } to extend the token expiration.
    * The request must then include the existing token in the Authorization header.
    * @param loginRoute the path for the login route, e.g. /login
-   * @param authenticate  an async function that checks username and password and resolves to true if they are valid
+   * @param authenticate  an async function that checks username and password and resolves to a (User-) Object if they are valid
    */
-  public handleLogin(loginRoute: string, authenticate: (username: string, password: string) => Promise<boolean>) {
+  public handleLogin(loginRoute: string, authenticate: (username: string, password: string) => Promise<any>) {
     this.addRoute("post", loginRoute, async (req: IncomingMessage, res: ServerResponse) => {
       try {
         const body = await this.readJsonBody(req, res);
         if (body && body.username && body.password) {
-          if (await authenticate(body.username, body.password)) {
+          const user = await authenticate(body.username, body.password);
+          if (user) {
             const jwt = require('jwt-simple');
             const secret = process.env.MIKROREST_JWT_SECRET
             if (!secret) {
@@ -323,8 +325,8 @@ export class MikroRest {
             const payload = { username: body.username, exp: validUntil };
             const token = jwt.encode(payload, secret);
             // Print the token to the console
-            logger.info(`User ${body.username} logged in, token: ${token}`);
-            this.sendJson(res, { token: token, expires: validUntil }); // expiration in minutes
+            logger.debug(`User ${body.username} logged in, token: ${token}`);
+            this.sendJson(res, { token: token, expires: validUntil, user: user });
             return false; // Stop further processing
           } else {
             this.error(res, 401, "Invalid username or password");
