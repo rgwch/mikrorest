@@ -297,7 +297,7 @@ export class MikroRest {
 
   /**
    * Let Mikrorest handle Login for you. Supply a function that checks username and password and returns true if they are valid.
-   * it will setup a POST route at loginPath (e.g. /login) that expects a JSON body with username and password.
+   * it will setup a POST route at loginRoute (e.g. /login) that expects a JSON body with username and password.
    * If the credentials are valid, it will return a JWT that can be used for authorization in subsequent requests.
    * The token is valid for MIKROREST_JWT_EXPIRATION minutes. You can use it in the Authorization header as "Token <token>".
    * The Login route also accepts a JSON body with { extend: true } to extend the token expiration.
