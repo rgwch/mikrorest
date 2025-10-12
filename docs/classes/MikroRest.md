@@ -1,4 +1,4 @@
-[**@rgwch/mikrorest v0.7.4**](../README.md)
+[**@rgwch/mikrorest v0.7.5**](../README.md)
 
 ***
 
@@ -146,7 +146,7 @@ Clears all routes and static directories
 
 > **error**(`res?`, `code?`, `text?`, `headers?`): `void`
 
-Defined in: index.ts:519
+Defined in: index.ts:521
 
 Send an error response
 
@@ -240,11 +240,12 @@ the URL object
 
 > **handleLogin**(`loginRoute`, `authenticate`): `void`
 
-Defined in: index.ts:308
+Defined in: index.ts:309
 
 Let Mikrorest handle Login for you. Supply a function that checks username and password and returns true if they are valid.
-it will setup a POST route at loginPath (e.g. /login) that expects a JSON body with username and password.
-If the credentials are valid, it will return a JWT that can be used for authorization in subsequent requests.
+it will setup a POST route at loginRoute (e.g. /login) that expects a JSON body with username and password.
+If the credentials are valid, it will return a JWT that can be used for authorization in subsequent requests, 
+and an (arbitrary) user object as received from the authenticate-function.
 The token is valid for MIKROREST_JWT_EXPIRATION minutes. You can use it in the Authorization header as "Token <token>".
 The Login route also accepts a JSON body with { extend: true } to extend the token expiration.
 The request must then include the existing token in the Authorization header.
@@ -259,9 +260,9 @@ the path for the login route, e.g. /login
 
 ##### authenticate
 
-(`username`, `password`) => `Promise`\<`boolean`\>
+(`username`, `password`) => `Promise`\<`any`\>
 
-an async function that checks username and password and resolves to true if they are valid
+an async function that checks username and password and resolves to a (User-) Object if they are valid
 
 #### Returns
 
@@ -273,7 +274,7 @@ an async function that checks username and password and resolves to true if they
 
 > **readBodyBuffer**(`req`): `Promise`\<`Buffer`\<`ArrayBufferLike`\>\>
 
-Defined in: index.ts:416
+Defined in: index.ts:418
 
 Read the request body as Buffer
 
@@ -299,7 +300,7 @@ Error if the request body is not valid
 
 > **readJsonBody**(`req`, `res?`): `Promise`\<`any`\>
 
-Defined in: index.ts:389
+Defined in: index.ts:391
 
 Read the request body as JSON
 
@@ -329,7 +330,7 @@ Error if the request body is not valid JSON
 
 > **sendBuffer**(`res?`, `buffer?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:498
+Defined in: index.ts:500
 
 Send a binary response. If is not provided, it will send a default response with status "ok".
 
@@ -369,7 +370,7 @@ Error if res or buffer is not provided
 
 > **sendHtml**(`res?`, `body?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:458
+Defined in: index.ts:460
 
 Send a HTML response. If body is not provided, it will send an empty response with status 200,ok.
 
@@ -405,7 +406,7 @@ optional headers to set (key-value pairs). Content-Type is set automatically to 
 
 > **sendJson**(`res?`, `body?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:438
+Defined in: index.ts:440
 
 Send a JSON response. If body is not provided, it will send a default response with status "ok".
 
@@ -439,7 +440,7 @@ optional headers to set (key-value pairs). Content-Type is set automatically to 
 
 > **sendPlain**(`res?`, `text?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:477
+Defined in: index.ts:479
 
 Send a plaintext response. If text is not provided, it will send a an empty string with status 200,ok.
 
@@ -475,7 +476,7 @@ optional headers to set (key-value pairs). Content-Type is set automatically to 
 
 > **setMaxAge**(`res`, `maxAge`): `void`
 
-Defined in: index.ts:533
+Defined in: index.ts:535
 
 #### Parameters
 
