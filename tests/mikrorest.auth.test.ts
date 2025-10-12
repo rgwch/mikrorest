@@ -18,7 +18,7 @@ describe('MikroRest Authentication Tests', () => {
         // Small delay to ensure server is fully started
         await new Promise(resolve => setTimeout(resolve, 100));
     });
-    
+
     afterEach(async () => {
         if (mikroRest) {
             await mikroRest.stop();
@@ -53,7 +53,7 @@ describe('MikroRest Authentication Tests', () => {
     });
 
     it("should reject invalid login attempts", async () => {
-        mikroRest.handleLogin("/login", (username, password) => {
+        mikroRest.handleLogin("/login", async (username, password) => {
             return username === 'admin' && password === 'password';
         });
         const result = await fetch(`http://localhost:${port}/login`, {
@@ -67,7 +67,7 @@ describe('MikroRest Authentication Tests', () => {
     })
 
     it("should accept valid login attempts and return JWT", async () => {
-        mikroRest.handleLogin("/login", (username, password) => {
+        mikroRest.handleLogin("/login", async (username, password) => {
             return username === 'admin' && password === 'password';
         });
         const result = await fetch(`http://localhost:${port}/login`, {
@@ -93,15 +93,15 @@ describe('MikroRest Authentication Tests', () => {
         expect(protectedData).toEqual({ message: 'protected content' });
     })
 
-    
+
     it("should extend tokens", async () => {
-        mikroRest.handleLogin("/login", (username, password) => {
+        mikroRest.handleLogin("/login", async (username, password) => {
             return username === 'admin' && password === 'password';
         });
-        
+
         // Add a small delay after adding the login route
         await new Promise(resolve => setTimeout(resolve, 50));
-        
+
         const result = await fetch(`http://localhost:${port}/login`, {
             method: 'POST',
             headers: {
@@ -149,5 +149,5 @@ describe('MikroRest Authentication Tests', () => {
         const protectedData2 = await protectedResult2.json();
         expect(protectedData2).toEqual({ message: 'protected content' });
     });
-        
+
 });
