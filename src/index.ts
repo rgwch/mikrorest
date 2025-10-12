@@ -303,14 +303,14 @@ export class MikroRest {
    * The Login route also accepts a JSON body with { extend: true } to extend the token expiration.
    * The request must then include the existing token in the Authorization header.
    * @param loginRoute the path for the login route, e.g. /login
-   * @param authenticate  a function that checks username and password and returns true if they are valid
+   * @param authenticate  an async function that checks username and password and resolves to true if they are valid
    */
-  public handleLogin(loginRoute: string, authenticate: (username: string, password: string) => boolean) {
+  public handleLogin(loginRoute: string, authenticate: (username: string, password: string) => Promise<boolean>) {
     this.addRoute("post", loginRoute, async (req: IncomingMessage, res: ServerResponse) => {
       try {
         const body = await this.readJsonBody(req, res);
         if (body && body.username && body.password) {
-          if (authenticate(body.username, body.password)) {
+          if (await authenticate(body.username, body.password)) {
             const jwt = require('jwt-simple');
             const secret = process.env.MIKROREST_JWT_SECRET
             if (!secret) {

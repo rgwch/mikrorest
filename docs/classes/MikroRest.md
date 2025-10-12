@@ -1,4 +1,4 @@
-[**@rgwch/mikrorest v0.7.3**](../README.md)
+[**@rgwch/mikrorest v0.7.4**](../README.md)
 
 ***
 
@@ -146,7 +146,7 @@ Clears all routes and static directories
 
 > **error**(`res?`, `code?`, `text?`, `headers?`): `void`
 
-Defined in: index.ts:518
+Defined in: index.ts:519
 
 Send an error response
 
@@ -259,9 +259,9 @@ the path for the login route, e.g. /login
 
 ##### authenticate
 
-(`username`, `password`) => `boolean`
+(`username`, `password`) => `Promise`\<`boolean`\>
 
-a function that checks username and password and returns true if they are valid
+an async function that checks username and password and resolves to true if they are valid
 
 #### Returns
 
@@ -273,7 +273,7 @@ a function that checks username and password and returns true if they are valid
 
 > **readBodyBuffer**(`req`): `Promise`\<`Buffer`\<`ArrayBufferLike`\>\>
 
-Defined in: index.ts:415
+Defined in: index.ts:416
 
 Read the request body as Buffer
 
@@ -299,7 +299,7 @@ Error if the request body is not valid
 
 > **readJsonBody**(`req`, `res?`): `Promise`\<`any`\>
 
-Defined in: index.ts:388
+Defined in: index.ts:389
 
 Read the request body as JSON
 
@@ -329,7 +329,7 @@ Error if the request body is not valid JSON
 
 > **sendBuffer**(`res?`, `buffer?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:497
+Defined in: index.ts:498
 
 Send a binary response. If is not provided, it will send a default response with status "ok".
 
@@ -369,7 +369,7 @@ Error if res or buffer is not provided
 
 > **sendHtml**(`res?`, `body?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:457
+Defined in: index.ts:458
 
 Send a HTML response. If body is not provided, it will send an empty response with status 200,ok.
 
@@ -405,7 +405,7 @@ optional headers to set (key-value pairs). Content-Type is set automatically to 
 
 > **sendJson**(`res?`, `body?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:437
+Defined in: index.ts:438
 
 Send a JSON response. If body is not provided, it will send a default response with status "ok".
 
@@ -439,7 +439,7 @@ optional headers to set (key-value pairs). Content-Type is set automatically to 
 
 > **sendPlain**(`res?`, `text?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:476
+Defined in: index.ts:477
 
 Send a plaintext response. If text is not provided, it will send a an empty string with status 200,ok.
 
@@ -475,7 +475,7 @@ optional headers to set (key-value pairs). Content-Type is set automatically to 
 
 > **setMaxAge**(`res`, `maxAge`): `void`
 
-Defined in: index.ts:532
+Defined in: index.ts:533
 
 #### Parameters
 
