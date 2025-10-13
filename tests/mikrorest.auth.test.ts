@@ -150,4 +150,12 @@ describe('MikroRest Authentication Tests', () => {
         expect(protectedData2).toEqual({ message: 'protected content' });
     });
 
+    it("should check JWT", () => {
+        const jwt = require('jwt-simple');
+        const testtoken = jwt.encode({ "foo": "bar", exp: new Date(Date.now()+10000) }, process.env.MIKROREST_JWT_SECRET)
+        const decoded=MikroRest.decodeJWT(testtoken)
+        expect(decoded).not.toBeNull()
+        expect(decoded.foo).toEqual("bar")
+    })
+
 });

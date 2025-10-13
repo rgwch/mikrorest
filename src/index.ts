@@ -243,7 +243,12 @@ export class MikroRest {
     }
   }
 
-  public decodeJWT(token: string): any | null {
+  /**
+   * Static helper method to decode an existing JWT Token
+   * @param token 
+   * @returns the decoded token or null if it could not be decoded or was not valid
+   */
+  public static decodeJWT: (token: string) => any | null = (token: string) => {
     try {
       const jwt = require('jwt-simple');
       const secret = process.env.MIKROREST_JWT_SECRET
@@ -290,7 +295,7 @@ export class MikroRest {
         return true
       } else {
         try {
-          const decoded = this.decodeJWT(key);
+          const decoded = MikroRest.decodeJWT(key);
           if (decoded) {
             (req as any).user = decoded; // attach decoded token to request object
             return true;
