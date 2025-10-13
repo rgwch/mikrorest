@@ -1,4 +1,4 @@
-[**@rgwch/mikrorest v0.7.5**](../README.md)
+[**@rgwch/mikrorest v0.7.6**](../README.md)
 
 ***
 
@@ -104,7 +104,7 @@ Error if the directory does not exist
 
 > **authorize**(`req`, `res`): `Promise`\<`boolean`\>
 
-Defined in: index.ts:253
+Defined in: index.ts:275
 
 Built-in authorization: Check header for Bearer or Token and a key supplied in the environment variable MIKROREST_API_KEYS,
 or check for a valid JWT token if MIKROREST_JWT_SECRET is set.
@@ -142,11 +142,29 @@ Clears all routes and static directories
 
 ***
 
+### decodeJWT()
+
+> **decodeJWT**(`token`): `any`
+
+Defined in: index.ts:246
+
+#### Parameters
+
+##### token
+
+`string`
+
+#### Returns
+
+`any`
+
+***
+
 ### error()
 
 > **error**(`res?`, `code?`, `text?`, `headers?`): `void`
 
-Defined in: index.ts:521
+Defined in: index.ts:535
 
 Send an error response
 
@@ -240,7 +258,7 @@ the URL object
 
 > **handleLogin**(`loginRoute`, `authenticate`): `void`
 
-Defined in: index.ts:309
+Defined in: index.ts:323
 
 Let Mikrorest handle Login for you. Supply a function that checks username and password and returns true if they are valid.
 it will setup a POST route at loginRoute (e.g. /login) that expects a JSON body with username and password.
@@ -274,7 +292,7 @@ an async function that checks username and password and resolves to a (User-) Ob
 
 > **readBodyBuffer**(`req`): `Promise`\<`Buffer`\<`ArrayBufferLike`\>\>
 
-Defined in: index.ts:418
+Defined in: index.ts:432
 
 Read the request body as Buffer
 
@@ -300,7 +318,7 @@ Error if the request body is not valid
 
 > **readJsonBody**(`req`, `res?`): `Promise`\<`any`\>
 
-Defined in: index.ts:391
+Defined in: index.ts:405
 
 Read the request body as JSON
 
@@ -330,7 +348,7 @@ Error if the request body is not valid JSON
 
 > **sendBuffer**(`res?`, `buffer?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:500
+Defined in: index.ts:514
 
 Send a binary response. If is not provided, it will send a default response with status "ok".
 
@@ -370,7 +388,7 @@ Error if res or buffer is not provided
 
 > **sendHtml**(`res?`, `body?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:460
+Defined in: index.ts:474
 
 Send a HTML response. If body is not provided, it will send an empty response with status 200,ok.
 
@@ -406,7 +424,7 @@ optional headers to set (key-value pairs). Content-Type is set automatically to 
 
 > **sendJson**(`res?`, `body?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:440
+Defined in: index.ts:454
 
 Send a JSON response. If body is not provided, it will send a default response with status "ok".
 
@@ -440,7 +458,7 @@ optional headers to set (key-value pairs). Content-Type is set automatically to 
 
 > **sendPlain**(`res?`, `text?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:479
+Defined in: index.ts:493
 
 Send a plaintext response. If text is not provided, it will send a an empty string with status 200,ok.
 
@@ -476,7 +494,7 @@ optional headers to set (key-value pairs). Content-Type is set automatically to 
 
 > **setMaxAge**(`res`, `maxAge`): `void`
 
-Defined in: index.ts:535
+Defined in: index.ts:549
 
 #### Parameters
 

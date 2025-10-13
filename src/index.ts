@@ -242,6 +242,28 @@ export class MikroRest {
       });
     }
   }
+
+  public decodeJWT(token: string): any | null {
+    try {
+      const jwt = require('jwt-simple');
+      const secret = process.env.MIKROREST_JWT_SECRET
+      if (secret) {
+        const decoded = jwt.decode(token, secret);
+        if (decoded && decoded.exp && new Date(decoded.exp) > new Date()) {
+          return decoded;
+        } else {
+          logger.warning("JWT token expired or invalid: " + token);
+          return null;
+        }
+      } else {
+        logger.error("JWT_SECRET environment variable not set");
+        return null;
+      }
+    } catch (err) {
+      logger.warning("Error decoding JWT: " + err);
+      return null;
+    }
+  }
   /**
    * Built-in authorization: Check header for Bearer or Token and a key supplied in the environment variable MIKROREST_API_KEYS,
    * or check for a valid JWT token if MIKROREST_JWT_SECRET is set.
@@ -268,20 +290,12 @@ export class MikroRest {
         return true
       } else {
         try {
-          const jwt = require('jwt-simple');
-          const secret = process.env.MIKROREST_JWT_SECRET
-          if (secret) {
-            const decoded = jwt.decode(key, secret);
-
-            if (decoded && decoded.exp && new Date(decoded.exp) > new Date()) {
-              (req as any).user = decoded; // attach decoded token to request object
-              return true;
-            } else {
-              logger.warning("JWT token expired or invalid: " + key);
-              return badRequest();
-            }
+          const decoded = this.decodeJWT(key);
+          if (decoded) {
+            (req as any).user = decoded; // attach decoded token to request object
+            return true;
           } else {
-            logger.error("JWT_SECRET environment variable not set");
+            logger.warning("JWT token expired or invalid: " + key);
             return badRequest();
           }
         } catch (err) {
