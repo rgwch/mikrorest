@@ -136,7 +136,8 @@ export class MikroRest {
   }
 
   /**
-   * Add a directory for static files
+   * Add a directory for static files. If the method is called several times,
+   * directories are searched in the sequence, they were added.
    * @param dir absolute path to the directory, e.g. path.join(__dirname, "..", "client", "dist")
    * @throws Error if the directory does not exist
    */
@@ -184,7 +185,7 @@ export class MikroRest {
   }
 
   /**
-   * Launch the server. routes and static directories can be added before ore after calling this method.
+   * Launch the server. routes and static directories can be added before or after calling this method.
    * @returns the HTTP server instance
    */
   public start() {
@@ -232,6 +233,10 @@ export class MikroRest {
     return this.server;
   }
 
+  /**
+   * Stop the server. No requests are accepted after this method is called.
+   * @returns 
+   */
   public async stop() {
     if (this.server) {
       return new Promise<void>((resolve) => {
@@ -315,13 +320,14 @@ export class MikroRest {
   }
 
   /**
-   * Let Mikrorest handle Login for you. Supply a function that checks username and password and returns true if they are valid.
+   * Let Mikrorest handle Login for you. Supply a route and function that checks username and password and returns an (arbitrary) object 
+   * if they are valid or null if not.
    * it will setup a POST route at loginRoute (e.g. /login) that expects a JSON body with username and password.
    * If the credentials are valid, it will return a JWT that can be used for authorization in subsequent requests, 
-   * and an (arbitrary) user object as received from the authenticate-function.
+   * and a user object as received from the authenticate-function.
    * The token is valid for MIKROREST_JWT_EXPIRATION minutes. You can use it in the Authorization header as "Token <token>".
    * The Login route also accepts a JSON body with { extend: true } to extend the token expiration.
-   * The request must then include the existing token in the Authorization header.
+   * The request must then include the existing token in the Authorization header and will receive the updated JWT as response.
    * @param loginRoute the path for the login route, e.g. /login
    * @param authenticate  an async function that checks username and password and resolves to a (User-) Object if they are valid
    */
@@ -450,7 +456,7 @@ export class MikroRest {
     });
   }
   /**
-   * Send a JSON response. If body is not provided, it will send a default response with status "ok".
+   * Send a JSON response. If body is not provided, it will send a default response with {"status": "ok"}.
    * @param res 
    * @param body
    * @param headers optional headers to set (key-value pairs). Content-Type is set automatically to "application/json"
@@ -509,7 +515,7 @@ export class MikroRest {
   }
 
   /**
-    * Send a binary response. If is not provided, it will send a default response with status "ok".
+    * Send a binary response. If buffer is not provided, it will send a default response with status "ok".
     * @param res 
     * @param buffer contents to send
     * @param code response status code, default is 200
