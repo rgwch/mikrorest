@@ -1,4 +1,4 @@
-[**@rgwch/mikrorest v0.7.6**](../README.md)
+[**@rgwch/mikrorest v0.7.7**](../README.md)
 
 ***
 
@@ -29,28 +29,6 @@ Optional configuration for the MikroRest instance.
 #### Returns
 
 `MikroRest`
-
-## Properties
-
-### decodeJWT()
-
-> `static` **decodeJWT**: (`token`) => `any`
-
-Defined in: index.ts:251
-
-Static helper method to decode an existing JWT Token
-
-#### Parameters
-
-##### token
-
-`string`
-
-#### Returns
-
-`any`
-
-the decoded token or null if it could not be decoded or was not valid
 
 ## Methods
 
@@ -100,9 +78,10 @@ Error if parameters are wrong
 
 > **addStaticDir**(`dir`): `void`
 
-Defined in: index.ts:143
+Defined in: index.ts:144
 
-Add a directory for static files
+Add a directory for static files. If the method is called several times,
+directories are searched in the sequence, they were added.
 
 #### Parameters
 
@@ -126,7 +105,7 @@ Error if the directory does not exist
 
 > **authorize**(`req`, `res`): `Promise`\<`boolean`\>
 
-Defined in: index.ts:280
+Defined in: index.ts:284
 
 Built-in authorization: Check header for Bearer or Token and a key supplied in the environment variable MIKROREST_API_KEYS,
 or check for a valid JWT token if MIKROREST_JWT_SECRET is set.
@@ -154,7 +133,7 @@ true if authorization succeeded.
 
 > **clearRoutes**(): `void`
 
-Defined in: index.ts:154
+Defined in: index.ts:155
 
 Clears all routes and static directories
 
@@ -168,7 +147,7 @@ Clears all routes and static directories
 
 > **error**(`res?`, `code?`, `text?`, `headers?`): `void`
 
-Defined in: index.ts:540
+Defined in: index.ts:545
 
 Send an error response
 
@@ -204,7 +183,7 @@ optional headers to set (key-value pairs). Content-Type is set automatically to 
 
 > **getParams**(`req`): `URLSearchParams`
 
-Defined in: index.ts:174
+Defined in: index.ts:175
 
 Convenience function to get the query parameters from the request
 
@@ -224,7 +203,7 @@ Convenience function to get the query parameters from the request
 
 > **getRoutes**(): `Map`\<`string`, [`MikroRestRoute`](../interfaces/MikroRestRoute.md)\>
 
-Defined in: index.ts:182
+Defined in: index.ts:183
 
 Get all routes as a Map
 
@@ -240,7 +219,7 @@ all routes defined so far
 
 > **getUrl**(`req`): `URL`
 
-Defined in: index.ts:165
+Defined in: index.ts:166
 
 Convenience function to get the URL from the request
 
@@ -262,15 +241,16 @@ the URL object
 
 > **handleLogin**(`loginRoute`, `authenticate`): `void`
 
-Defined in: index.ts:328
+Defined in: index.ts:333
 
-Let Mikrorest handle Login for you. Supply a function that checks username and password and returns true if they are valid.
+Let Mikrorest handle Login for you. Supply a route and function that checks username and password and returns an (arbitrary) object 
+if they are valid or null if not.
 it will setup a POST route at loginRoute (e.g. /login) that expects a JSON body with username and password.
 If the credentials are valid, it will return a JWT that can be used for authorization in subsequent requests, 
-and an (arbitrary) user object as received from the authenticate-function.
+and a user object as received from the authenticate-function.
 The token is valid for MIKROREST_JWT_EXPIRATION minutes. You can use it in the Authorization header as "Token <token>".
 The Login route also accepts a JSON body with { extend: true } to extend the token expiration.
-The request must then include the existing token in the Authorization header.
+The request must then include the existing token in the Authorization header and will receive the updated JWT as response.
 
 #### Parameters
 
@@ -296,7 +276,7 @@ an async function that checks username and password and resolves to a (User-) Ob
 
 > **readBodyBuffer**(`req`): `Promise`\<`Buffer`\<`ArrayBufferLike`\>\>
 
-Defined in: index.ts:437
+Defined in: index.ts:442
 
 Read the request body as Buffer
 
@@ -322,7 +302,7 @@ Error if the request body is not valid
 
 > **readJsonBody**(`req`, `res?`): `Promise`\<`any`\>
 
-Defined in: index.ts:410
+Defined in: index.ts:415
 
 Read the request body as JSON
 
@@ -352,9 +332,9 @@ Error if the request body is not valid JSON
 
 > **sendBuffer**(`res?`, `buffer?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:519
+Defined in: index.ts:524
 
-Send a binary response. If is not provided, it will send a default response with status "ok".
+Send a binary response. If buffer is not provided, it will send a default response with status "ok".
 
 #### Parameters
 
@@ -392,7 +372,7 @@ Error if res or buffer is not provided
 
 > **sendHtml**(`res?`, `body?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:479
+Defined in: index.ts:484
 
 Send a HTML response. If body is not provided, it will send an empty response with status 200,ok.
 
@@ -428,9 +408,9 @@ optional headers to set (key-value pairs). Content-Type is set automatically to 
 
 > **sendJson**(`res?`, `body?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:459
+Defined in: index.ts:464
 
-Send a JSON response. If body is not provided, it will send a default response with status "ok".
+Send a JSON response. If body is not provided, it will send a default response with {"status": "ok"}.
 
 #### Parameters
 
@@ -462,7 +442,7 @@ optional headers to set (key-value pairs). Content-Type is set automatically to 
 
 > **sendPlain**(`res?`, `text?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:498
+Defined in: index.ts:503
 
 Send a plaintext response. If text is not provided, it will send a an empty string with status 200,ok.
 
@@ -498,7 +478,7 @@ optional headers to set (key-value pairs). Content-Type is set automatically to 
 
 > **setMaxAge**(`res`, `maxAge`): `void`
 
-Defined in: index.ts:554
+Defined in: index.ts:559
 
 #### Parameters
 
@@ -520,9 +500,9 @@ Defined in: index.ts:554
 
 > **start**(): `any`
 
-Defined in: index.ts:190
+Defined in: index.ts:191
 
-Launch the server. routes and static directories can be added before ore after calling this method.
+Launch the server. routes and static directories can be added before or after calling this method.
 
 #### Returns
 
@@ -536,8 +516,40 @@ the HTTP server instance
 
 > **stop**(): `Promise`\<`void`\>
 
-Defined in: index.ts:235
+Defined in: index.ts:240
+
+Stop the server. No requests are accepted after this method is called.
 
 #### Returns
 
 `Promise`\<`void`\>
+
+***
+
+### decodeJWT()
+
+> `static` **decodeJWT**(`token`, `jwt_secret?`, `checkExpire?`): `any`
+
+Defined in: index.ts:256
+
+Static helper method to decode an existing JWT Token
+
+#### Parameters
+
+##### token
+
+`string`
+
+##### jwt\_secret?
+
+`string`
+
+##### checkExpire?
+
+`boolean` = `true`
+
+#### Returns
+
+`any`
+
+the decoded token or null if it could not be decoded or was not valid

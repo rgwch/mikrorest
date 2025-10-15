@@ -253,20 +253,19 @@ export class MikroRest {
    * @param token 
    * @returns the decoded token or null if it could not be decoded or was not valid
    */
-  public static decodeJWT: (token: string) => any | null = (token: string) => {
+  public static decodeJWT(token: string, jwt_secret?: string, checkExpire= true): any | null {
     try {
       const jwt = require('jwt-simple');
-      const secret = process.env.MIKROREST_JWT_SECRET
-      if (secret) {
-        const decoded = jwt.decode(token, secret);
-        if (decoded && decoded.exp && new Date(decoded.exp) > new Date()) {
+      if (jwt_secret) {
+        const decoded = jwt.decode(token, jwt_secret);
+        if (decoded && (!checkExpire || (decoded.exp && new Date(decoded.exp) > new Date()))) {
           return decoded;
         } else {
           logger.warning("JWT token expired or invalid: " + token);
           return null;
         }
       } else {
-        logger.error("JWT_SECRET environment variable not set");
+        logger.error("jwt_secret not set");
         return null;
       }
     } catch (err) {
@@ -300,7 +299,7 @@ export class MikroRest {
         return true
       } else {
         try {
-          const decoded = MikroRest.decodeJWT(key);
+          const decoded = MikroRest.decodeJWT(key, process.env.MIKROREST_JWT_SECRET);
           if (decoded) {
             (req as any).user = decoded; // attach decoded token to request object
             return true;

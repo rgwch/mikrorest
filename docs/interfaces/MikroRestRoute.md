@@ -1,4 +1,4 @@
-[**@rgwch/mikrorest v0.7.6**](../README.md)
+[**@rgwch/mikrorest v0.7.7**](../README.md)
 
 ***
 

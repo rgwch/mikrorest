@@ -1,6 +1,6 @@
 # MikroRest Server
 
-A minimal, but fully functional REST server for NodeJS.
+A minimal, but fully functional REST server in TypeScript for NodeJS.
 Use for proof-of concepts, simple private servers and so on.
 
 ## Install
@@ -9,7 +9,36 @@ Use for proof-of concepts, simple private servers and so on.
 
 ## Use
 
-see src/demo.ts. Run with `npm run demo` or `npx ts-node src/demo.ts`
+```typescript
+// make sure, environment variables MIKROREST_API_KEYS or MIKROREST_JWT_SECRET are set.
+
+import {MikroRest} from '@rgwch/mikrorest'
+import path from 'path'
+
+// create server
+const server=new MikroRest()
+
+// add open routes
+server.adRoute("get", "/api/sayhello",async (req,res)=>{
+  server.sendPlain(res,"Hello, world")
+})
+// add protected routes (optional)
+server.adRoute("get", "/api/tellme", server.authorize,async (req,res)=>{
+  server.sendPlain(res,"it's a secret")
+})
+// add static files directory (optional, directory must exist)
+server.addStaticDir(path.join(__dirname, "../../client/dist"));
+
+// implement Login (optional)
+server.handleLogin("/api/login",async (username,password)=>{
+  // do some checks to verify
+  return {checkeduser: username}
+})
+
+// start server
+server.start()
+```
+see also src/demo.ts. Run with `npm run demo` or `npx ts-node src/demo.ts`
 
 ## Built-in authentication
 
