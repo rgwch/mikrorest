@@ -68,4 +68,14 @@ server.addRoute("get", "/temperature-auth-custom",
 
     return false
   })
+
+// A login route. Call with `curl -X POST -d '{"username":"user","password":"password"}' http://localhost:3339/auth/login`
+process.env.MIKROREST_JWT_SECRET = "supersecret"
+server.handleLogin("/auth/login", async (username, password) => {
+  if (username == "user" && password == "password") {
+    return { "myuser": "abc123" }
+  } else {
+    return null
+  }
+})
 server.start()
