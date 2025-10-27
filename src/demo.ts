@@ -78,4 +78,7 @@ server.handleLogin("/auth/login", async (username, password) => {
     return null
   }
 })
+
+
+
 server.start()

@@ -13,7 +13,7 @@ import { existsSync } from "fs";
 /**
  * A handler function for a route. It receives the IncomingMessage and ServerResponse objects.
  * It must return a Promise that resolves to true if the next handler should be called, or false to stop processing.
- * The handler must have answered the request, if it returns false. (Otherwise, the users's browser will hang).
+ * The handler must have answered the request if it returns false. (Otherwise, the user's browser will hang).
  */
 export type MikroRestHandler = (req: IncomingMessage, res: ServerResponse) => Promise<boolean>;
 /**
@@ -42,13 +42,13 @@ export type MikroRestOptions = {
     /** path to SSL certificate file */
     cert: string;
   };
-  /** CORS settings: Allowed headers headers in development mode (default: ['Content-Type', 'Authorization']) */
+  /** CORS settings: Allowed headers in development mode (default: ['Content-Type', 'Authorization']) */
   allowedHeadersDevel?: string[];
   /** CORS settings: Allowed methods in development mode (default: ['GET', 'POST', 'OPTIONS'])  */
   allowedMethodsDevel?: string[];
   /** CORS settings: Allowed origins in development mode (default: ['*']) */
   allowedOriginsDevel?: string[];
-  /** CORS settings: Allowed headers headers in production mode (default: ['Content-Type', 'Authorization']) */
+  /** CORS settings: Allowed headers in production mode (default: ['Content-Type', 'Authorization']) */
   allowedHeadersProd?: string[];
   /** CORS settings: Allowed methods in production mode (default: ['GET', 'POST', 'OPTIONS'])  */
   allowedMethodsProd?: string[];
@@ -85,7 +85,7 @@ export class MikroRest {
   private loginRoute = ""
 
   /**
-   * The constructor creates practical defaults for the MikroRest instance. Modify as needed with options 
+   * The constructor creates practical defaults for the MikroRest instance. Modify as needed with options.
    * @param options Optional configuration for the MikroRest instance.
    * 
    */
@@ -107,12 +107,12 @@ export class MikroRest {
   /**
    * Adds a new route to the MikroRest instance. 
    * If the method is called several times with the same method and path, 
-   * handlers are just appended to existing.
+   * handlers are appended to existing ones.
    * @param method The HTTP method for the route (GET, POST, OPTIONS, PUT, DELETE)
    * @param path The path for the route, starting with /
-   * @param handlers The handler functions for the route, If more than one handler is supplied,
+   * @param handlers The handler functions for the route. If more than one handler is supplied,
      handlers are called in the order given.
-   * If a handler returns true, the next handler of the chain is called, else the call is terminated
+   * If a handler returns true, the next handler in the chain is called, else the call is terminated
    * @throws Error if parameters are wrong
    */
   public addRoute(method: MikroRestMethod, path: string, ...handlers: Array<MikroRestHandler>) {
@@ -145,7 +145,7 @@ export class MikroRest {
 
   /**
    * Add a directory for static files. If the method is called several times,
-   * directories are searched in the sequence, they were added.
+   * directories are searched in the sequence they were added.
    * @param dir absolute path to the directory, e.g. path.join(__dirname, "..", "client", "dist")
    * @throws Error if the directory does not exist
    */
@@ -168,7 +168,7 @@ export class MikroRest {
 
   /**
    * Convenience function to get the URL from the request
-   * @param req 
+   * @param req The incoming request
    * @returns the URL object
    */
   public getUrl(req: IncomingMessage): URL {
@@ -177,8 +177,8 @@ export class MikroRest {
 
   /**
    * Convenience function to get the query parameters from the request
-   * @param req 
-   * @returns 
+   * @param req The incoming request
+   * @returns The URL search parameters
    */
   public getParams(req: IncomingMessage): URLSearchParams {
     return this.getUrl(req).searchParams;
@@ -259,7 +259,7 @@ export class MikroRest {
 
   /**
    * Stop the server. No requests are accepted after this method is called.
-   * @returns 
+   * @returns A promise that resolves when the server has stopped
    */
   public async stop() {
     if (this.server) {
@@ -274,8 +274,10 @@ export class MikroRest {
   }
 
   /**
-   * Static helper method to decode an existing JWT Token
-   * @param token 
+   * Static helper method to decode an existing JWT token
+   * @param token The JWT token to decode
+   * @param jwt_secret The secret used to verify the token
+   * @param checkExpire Whether to check if the token has expired
    * @returns the decoded token or null if it could not be decoded or was not valid
    */
   public static decodeJWT(token: string, jwt_secret?: string, checkExpire = true): any | null {
@@ -302,8 +304,8 @@ export class MikroRest {
    * Built-in authorization: Check header for Bearer or Token and a key supplied in the environment variable MIKROREST_API_KEYS,
    * or check for a valid JWT token if MIKROREST_JWT_SECRET is set.
    * To use, simply prepend server.authorize to your handler in a route definition.
-   * @param req 
-   * @param res 
+   * @param req The incoming request
+   * @param res The server response
    * @returns true if authorization succeeded.
    */
   public async authorize(req: IncomingMessage, res: ServerResponse): Promise<boolean> {
@@ -344,16 +346,16 @@ export class MikroRest {
   }
 
   /**
-   * Let Mikrorest handle Login for you. Supply a route and function that checks username and password and returns an (arbitrary) object 
+   * Let MikroRest handle login for you. Supply a route and function that checks username and password and returns an (arbitrary) object 
    * if they are valid or null if not.
-   * it will setup a POST route at loginRoute (e.g. /login) that expects a JSON body with username and password.
+   * It will set up a POST route at loginRoute (e.g. /login) that expects a JSON body with username and password.
    * If the credentials are valid, it will return a JWT that can be used for authorization in subsequent requests, 
-   * and a user object as received from the authenticate-function.
+   * and a user object as received from the authenticate function.
    * The token is valid for MIKROREST_JWT_EXPIRATION minutes. You can use it in the Authorization header as "Token <token>".
-   * The Login route also accepts a JSON body with { extend: true } to extend the token expiration.
+   * The login route also accepts a JSON body with { extend: true } to extend the token expiration.
    * The request must then include the existing token in the Authorization header and will receive the updated JWT as response.
    * @param loginRoute the path for the login route, e.g. /login
-   * @param authenticate  an async function that checks username and password and resolves to a (User-) Object if they are valid
+   * @param authenticate an async function that checks username and password and resolves to a (User-) Object if they are valid
    */
   public handleLogin(loginRoute: string, authenticate: (username: string, password: string) => Promise<any>) {
     this.addRoute("post", loginRoute, async (req: IncomingMessage, res: ServerResponse) => {
@@ -460,7 +462,7 @@ export class MikroRest {
 
   /**
   * Read the request body as Buffer
-  * @param req 
+  * @param req The incoming request
   * @returns a Buffer object
   * @throws Error if the request body is not valid
   */
@@ -481,10 +483,10 @@ export class MikroRest {
   }
   /**
    * Send a JSON response. If body is not provided, it will send a default response with {"status": "ok"}.
-   * @param res 
-   * @param body
-   * @param headers optional headers to set (key-value pairs). Content-Type is set automatically to "application/json"
-   * @param code response status code, default is 200
+   * @param res The server response
+   * @param body The response body
+   * @param code Response status code, default is 200
+   * @param headers Optional headers to set (key-value pairs). Content-Type is set automatically to "application/json"
    */
   public sendJson(res?: ServerResponse, body?: any, code: number = 200, headers?: { [key: string]: string }) {
     if (res) {
@@ -562,10 +564,10 @@ export class MikroRest {
   }
   /**
    * Send an error response
-   * @param res 
-   * @param code code (defaults to 500)
-   * @param headers optional headers to set (key-value pairs). Content-Type is set automatically to "text/plain" if not provided
-   * @param text text to send, defaults to "internal server error"
+   * @param res The server response
+   * @param code Status code (defaults to 500)
+   * @param text Text to send, defaults to "Internal Server Error"
+   * @param headers Optional headers to set (key-value pairs). Content-Type is set automatically to "text/plain" if not provided
    */
   public error(res?: ServerResponse, code?: number, text?: string, headers?: { [key: string]: string }) {
     logger.error("Error: " + text)
@@ -588,10 +590,10 @@ export class MikroRest {
   }
 
   /** 
-  * Send raw file from static dir. If more than one static dir was added, they are searched in the sequence, they were added.
-  * Some sanitizing is performed: Directory traversal ands special characters are not allowed. If the file is not found,
-  * 404 "not found" is sent. If a file is found, it is sent with the correct content-type header according to the file extension.
-  * (known types are: js, css, svg, jpg, txt, pdf. All other files are sent as "text/html; charset=utf-8")
+  * Send raw file from static directory. If more than one static directory was added, they are searched in the sequence they were added.
+  * Some sanitizing is performed: Directory traversal and special characters are not allowed. If the file is not found,
+  * 404 "Not Found" is sent. If a file is found, it is sent with the correct content-type header according to the file extension.
+  * (Known types are: js, css, svg, jpg, txt, pdf. All other files are sent as "text/html; charset=utf-8")
   **/
   private handleFile(res: ServerResponse, url: URL) {
     let file = url.pathname
@@ -626,7 +628,8 @@ export class MikroRest {
   }
   /**
   * Set correct content-type header and send file.
-  * @param filename file to send
+  * @param res The server response
+  * @param filename File to send
   */
   private send(res: ServerResponse, filename: string) {
     try {
