@@ -37,8 +37,10 @@ export type MikroRestOptions = {
   port?: number;
   /** SSL settings: If provided, an HTTPS server is created */
   ssl?: {
-    key: string; // path to SSL key file
-    cert: string; // path to SSL certificate file
+    /** path to SSL key file */
+    key: string;
+    /** path to SSL certificate file */
+    cert: string;
   };
   /** CORS settings: Allowed headers headers in development mode (default: ['Content-Type', 'Authorization']) */
   allowedHeadersDevel?: string[];

@@ -1,4 +1,4 @@
-[**@rgwch/mikrorest v0.7.7**](../README.md)
+[**@rgwch/mikrorest v0.8.0**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: MikroRestRoute
 
-Defined in: index.ts:28
+Defined in: index.ts:29
 
 A route definition for MikroRest
 The path must begin with /
@@ -19,7 +19,7 @@ Handlers are called in the order given. If a handler returns true, the next hand
 
 > **handlers**: [`MikroRestHandler`](../type-aliases/MikroRestHandler.md)[]
 
-Defined in: index.ts:31
+Defined in: index.ts:32
 
 ***
 
@@ -27,7 +27,7 @@ Defined in: index.ts:31
 
 > **method**: [`MikroRestMethod`](../type-aliases/MikroRestMethod.md)
 
-Defined in: index.ts:29
+Defined in: index.ts:30
 
 ***
 
@@ -35,4 +35,4 @@ Defined in: index.ts:29
 
 > **path**: `string`
 
-Defined in: index.ts:30
+Defined in: index.ts:31

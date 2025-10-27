@@ -1,8 +1,8 @@
-[**@rgwch/mikrorest v0.7.7**](README.md)
+[**@rgwch/mikrorest v0.8.0**](README.md)
 
 ***
 
-# @rgwch/mikrorest v0.7.7
+# @rgwch/mikrorest v0.8.0
 
 ## Classes
 

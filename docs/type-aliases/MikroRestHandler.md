@@ -1,4 +1,4 @@
-[**@rgwch/mikrorest v0.7.7**](../README.md)
+[**@rgwch/mikrorest v0.8.0**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **MikroRestHandler** = (`req`, `res`) => `Promise`\<`boolean`\>
 
-Defined in: index.ts:17
+Defined in: index.ts:18
 
 A handler function for a route. It receives the IncomingMessage and ServerResponse objects.
 It must return a Promise that resolves to true if the next handler should be called, or false to stop processing.

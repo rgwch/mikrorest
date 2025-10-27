@@ -1,4 +1,4 @@
-**@rgwch/mikrorest v0.7.7**
+**@rgwch/mikrorest v0.8.0**
 
 ***
 
@@ -53,9 +53,13 @@ You can use Mikrorest's built-in authorization system (of course you can use you
 (2) call the handleLogin() method with a route and an authentication function as parameters. If you do so, MikroRest will create a login-route at the spezified location and call the authentication function if the user POST that login route with username and passwword in the JSON Body. if the authentication function returns an object, a JWT Token is created and returned together with that object to the client. Note: You must provide a MIKROREST_JWT_SECRET environment variable which gives the secret key to sign the JWT Token.
 The client must then include an "Authorization: Token &lt;token&gt;" header with every request.
 
+## SSL
+
+If you need an SSL server, you can pass pathnames for key and certificate to the constructor [options](docs/type-aliases/MikroRestOptions.md).
+
 ## API
 
-see [docs](_media/globals.md)
+see [docs](docs/globals.md)
 
 ## Tests
 
