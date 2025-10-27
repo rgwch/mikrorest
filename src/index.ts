@@ -1,4 +1,5 @@
 import { createServer, IncomingMessage, ServerResponse } from "http";
+import { createServer as createSSlServer } from "https";
 import { logger } from "./logger";
 const pck = require('../package.json')
 import { createReadStream } from "fs";
@@ -34,6 +35,11 @@ export interface MikroRestRoute {
 export type MikroRestOptions = {
   /** Port number for the server (default: 3339 or value of environment variable MIKROREST_PORT) */
   port?: number;
+  /** SSL settings: If provided, an HTTPS server is created */
+  ssl?: {
+    key: string; // path to SSL key file
+    cert: string; // path to SSL certificate file
+  };
   /** CORS settings: Allowed headers headers in development mode (default: ['Content-Type', 'Authorization']) */
   allowedHeadersDevel?: string[];
   /** CORS settings: Allowed methods in development mode (default: ['GET', 'POST', 'OPTIONS'])  */
@@ -81,7 +87,7 @@ export class MikroRest {
    * @param options Optional configuration for the MikroRest instance.
    * 
    */
-  public constructor(options?: MikroRestOptions) {
+  public constructor(private options?: MikroRestOptions) {
     this.port = options?.port || parseInt(process.env.MIKROREST_PORT || '3339');
     if (options) {
       this.allowedHeadersDevel = options.allowedHeadersDevel || this.allowedHeadersDevel;
@@ -184,52 +190,68 @@ export class MikroRest {
     return this.routes;
   }
 
+  private async handler(req: IncomingMessage, res: ServerResponse) {
+    const method = req.method?.toLowerCase() ?? "get"
+    const origin = req.headers.origin ?? "";
+
+    logger.debug('Requesting ' + req.url + ", method: " + method + ", origin: " + origin);
+    // logger.debug("Headers: ", JSON.stringify(req.headers));
+    if (this.allowedOrigins.includes("*") || this.allowedOrigins.includes(origin)) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+    } else {
+      // logger.warning(`Origin not allowed: ${origin} serving ${req.url}`);
+      res.setHeader('Access-Control-Allow-Origin', '/'); // or set to a specific allowed origin
+    }
+
+    if (method === "options") {
+      res.setHeader('Access-Control-Allow-Methods', process.env.NODE_ENV === "development" ? this.allowedMethodsDevel.join(', ') : this.allowedMethodsProd.join(', '));
+      res.setHeader('Access-Control-Max-Age', '86400');
+      res.setHeader('Access-Control-Allow-Headers', process.env.NODE_ENV === "development" ? this.allowedHeadersDevel.join(', ') : this.allowedHeadersProd.join(', '));
+      res.statusCode = 200;
+      res.end();
+      return;
+    } else {
+      const route = this.routes.get(`${method}-${this.getUrl(req).pathname.toLowerCase()}`);
+      if (route) {
+        try {
+          for (const handler of route.handlers) {
+            if (!await handler(req, res)) {
+              return; // If handler returns false, stop further processing
+            }
+          }
+          return; // If all handlers processed successfully, return
+        } catch (err) {
+          this.error(res, 500, serverError);
+          return;
+        }
+      } // no route found
+      this.handleFile(res, new URL(req.url!, `http://${req.headers.host}`));
+    }
+  }
+
   /**
    * Launch the server. routes and static directories can be added before or after calling this method.
    * @returns the HTTP server instance
    */
   public start() {
-
-    this.server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
-      const method = req.method?.toLowerCase() ?? "get"
-      const origin = req.headers.origin ?? "";
-
-      logger.debug('Requesting ' + req.url + ", method: " + method + ", origin: " + origin);
-      // logger.debug("Headers: ", JSON.stringify(req.headers));
-      if (this.allowedOrigins.includes("*") || this.allowedOrigins.includes(origin)) {
-        res.setHeader('Access-Control-Allow-Origin', origin);
-      } else {
-        // logger.warning(`Origin not allowed: ${origin} serving ${req.url}`);
-        res.setHeader('Access-Control-Allow-Origin', '/'); // or set to a specific allowed origin
-      }
-
-      if (method === "options") {
-        res.setHeader('Access-Control-Allow-Methods', process.env.NODE_ENV === "development" ? this.allowedMethodsDevel.join(', ') : this.allowedMethodsProd.join(', '));
-        res.setHeader('Access-Control-Max-Age', '86400');
-        res.setHeader('Access-Control-Allow-Headers', process.env.NODE_ENV === "development" ? this.allowedHeadersDevel.join(', ') : this.allowedHeadersProd.join(', '));
-        res.statusCode = 200;
-        res.end();
-        return;
-      } else {
-        const route = this.routes.get(`${method}-${this.getUrl(req).pathname.toLowerCase()}`);
-        if (route) {
-          try {
-            for (const handler of route.handlers) {
-              if (!await handler(req, res)) {
-                return; // If handler returns false, stop further processing
-              }
-            }
-            return; // If all handlers processed successfully, return
-          } catch (err) {
-            this.error(res, 500, serverError);
-            return;
-          }
-        } // no route found
-        this.handleFile(res, new URL(req.url!, `http://${req.headers.host}`));
-      }
-    }).listen(this.port, () => {
-      logger.info(`Server listening on port ${this.port} in ${this.mode} mode`);
-    });
+    if (this.server) {
+      logger.warning("Server is already running");
+      return this.server;
+    }
+    if (this.options?.ssl) {
+      const fs = require('fs');
+      const sslOptions = {
+        key: fs.readFileSync(this.options.ssl.key),
+        cert: fs.readFileSync(this.options.ssl.cert)
+      };
+      this.server = createSSlServer(sslOptions, this.handler.bind(this)).listen(this.port, () => {
+        logger.info(`HTTPS Server listening on port ${this.port} in ${this.mode} mode`);
+      });
+    } else {
+      this.server = createServer(this.handler.bind(this)).listen(this.port, () => {
+        logger.info(`Server listening on port ${this.port} in ${this.mode} mode`);
+      });
+    }
     return this.server;
   }
 
@@ -242,6 +264,7 @@ export class MikroRest {
       return new Promise<void>((resolve) => {
         this.server.close(() => {
           logger.info("Server stopped");
+          this.server = null;
           resolve();
         });
       });
@@ -253,7 +276,7 @@ export class MikroRest {
    * @param token 
    * @returns the decoded token or null if it could not be decoded or was not valid
    */
-  public static decodeJWT(token: string, jwt_secret?: string, checkExpire= true): any | null {
+  public static decodeJWT(token: string, jwt_secret?: string, checkExpire = true): any | null {
     try {
       const jwt = require('jwt-simple');
       if (jwt_secret) {
