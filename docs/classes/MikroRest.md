@@ -1,4 +1,4 @@
-[**@rgwch/mikrorest v0.8.0**](../README.md)
+[**@rgwch/mikrorest v0.9.0**](../README.md)
 
 ***
 
@@ -16,7 +16,7 @@ Defined in: index.ts:59
 
 Defined in: index.ts:92
 
-The constructor creates practical defaults for the MikroRest instance. Modify as needed with options
+The constructor creates practical defaults for the MikroRest instance. Modify as needed with options.
 
 #### Parameters
 
@@ -40,7 +40,7 @@ Defined in: index.ts:118
 
 Adds a new route to the MikroRest instance. 
 If the method is called several times with the same method and path, 
-handlers are just appended to existing.
+handlers are appended to existing ones.
 
 #### Parameters
 
@@ -60,9 +60,9 @@ The path for the route, starting with /
 
 ...[`MikroRestHandler`](../type-aliases/MikroRestHandler.md)[]
 
-The handler functions for the route, If more than one handler is supplied,
+The handler functions for the route. If more than one handler is supplied,
   handlers are called in the order given.
-If a handler returns true, the next handler of the chain is called, else the call is terminated
+If a handler returns true, the next handler in the chain is called, else the call is terminated
 
 #### Returns
 
@@ -81,7 +81,7 @@ Error if parameters are wrong
 Defined in: index.ts:152
 
 Add a directory for static files. If the method is called several times,
-directories are searched in the sequence, they were added.
+directories are searched in the sequence they were added.
 
 #### Parameters
 
@@ -105,7 +105,7 @@ Error if the directory does not exist
 
 > **authorize**(`req`, `res`): `Promise`\<`boolean`\>
 
-Defined in: index.ts:309
+Defined in: index.ts:331
 
 Built-in authorization: Check header for Bearer or Token and a key supplied in the environment variable MIKROREST_API_KEYS,
 or check for a valid JWT token if MIKROREST_JWT_SECRET is set.
@@ -117,9 +117,13 @@ To use, simply prepend server.authorize to your handler in a route definition.
 
 `IncomingMessage`
 
+The incoming request
+
 ##### res
 
 `ServerResponse`
+
+The server response
 
 #### Returns
 
@@ -147,7 +151,7 @@ Clears all routes and static directories
 
 > **error**(`res?`, `code?`, `text?`, `headers?`): `void`
 
-Defined in: index.ts:570
+Defined in: index.ts:588
 
 Send an error response
 
@@ -157,21 +161,23 @@ Send an error response
 
 `ServerResponse`\<`IncomingMessage`\>
 
+The server response
+
 ##### code?
 
 `number`
 
-code (defaults to 500)
+Status code (defaults to 500)
 
 ##### text?
 
 `string`
 
-text to send, defaults to "internal server error"
+Text to send, defaults to "Internal Server Error"
 
 ##### headers?
 
-optional headers to set (key-value pairs). Content-Type is set automatically to "text/plain" if not provided
+Optional headers to set (key-value pairs). Content-Type is set automatically to "text/plain" if not provided
 
 #### Returns
 
@@ -193,9 +199,13 @@ Convenience function to get the query parameters from the request
 
 `IncomingMessage`
 
+The incoming request
+
 #### Returns
 
 `URLSearchParams`
+
+The URL search parameters
 
 ***
 
@@ -229,6 +239,8 @@ Convenience function to get the URL from the request
 
 `IncomingMessage`
 
+The incoming request
+
 #### Returns
 
 `URL`
@@ -241,15 +253,15 @@ the URL object
 
 > **handleLogin**(`loginRoute`, `authenticate`): `void`
 
-Defined in: index.ts:358
+Defined in: index.ts:380
 
-Let Mikrorest handle Login for you. Supply a route and function that checks username and password and returns an (arbitrary) object 
+Let MikroRest handle login for you. Supply a route and function that checks username and password and returns an (arbitrary) object 
 if they are valid or null if not.
-it will setup a POST route at loginRoute (e.g. /login) that expects a JSON body with username and password.
+It will set up a POST route at loginRoute (e.g. /login) that expects a JSON body with username and password.
 If the credentials are valid, it will return a JWT that can be used for authorization in subsequent requests, 
-and a user object as received from the authenticate-function.
+and a user object as received from the authenticate function.
 The token is valid for MIKROREST_JWT_EXPIRATION minutes. You can use it in the Authorization header as "Token <token>".
-The Login route also accepts a JSON body with { extend: true } to extend the token expiration.
+The login route also accepts a JSON body with { extend: true } to extend the token expiration.
 The request must then include the existing token in the Authorization header and will receive the updated JWT as response.
 
 #### Parameters
@@ -276,7 +288,7 @@ an async function that checks username and password and resolves to a (User-) Ob
 
 > **readBodyBuffer**(`req`): `Promise`\<`Buffer`\<`ArrayBufferLike`\>\>
 
-Defined in: index.ts:467
+Defined in: index.ts:485
 
 Read the request body as Buffer
 
@@ -285,6 +297,8 @@ Read the request body as Buffer
 ##### req
 
 `IncomingMessage`
+
+The incoming request
 
 #### Returns
 
@@ -302,7 +316,7 @@ Error if the request body is not valid
 
 > **readJsonBody**(`req`, `res?`): `Promise`\<`any`\>
 
-Defined in: index.ts:440
+Defined in: index.ts:458
 
 Read the request body as JSON
 
@@ -332,7 +346,7 @@ Error if the request body is not valid JSON
 
 > **sendBuffer**(`res?`, `buffer?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:549
+Defined in: index.ts:567
 
 Send a binary response. If buffer is not provided, it will send a default response with status "ok".
 
@@ -372,7 +386,7 @@ Error if res or buffer is not provided
 
 > **sendHtml**(`res?`, `body?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:509
+Defined in: index.ts:527
 
 Send a HTML response. If body is not provided, it will send an empty response with status 200,ok.
 
@@ -408,7 +422,7 @@ optional headers to set (key-value pairs). Content-Type is set automatically to 
 
 > **sendJson**(`res?`, `body?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:489
+Defined in: index.ts:507
 
 Send a JSON response. If body is not provided, it will send a default response with {"status": "ok"}.
 
@@ -418,19 +432,23 @@ Send a JSON response. If body is not provided, it will send a default response w
 
 `ServerResponse`\<`IncomingMessage`\>
 
+The server response
+
 ##### body?
 
 `any`
+
+The response body
 
 ##### code?
 
 `number` = `200`
 
-response status code, default is 200
+Response status code, default is 200
 
 ##### headers?
 
-optional headers to set (key-value pairs). Content-Type is set automatically to "application/json"
+Optional headers to set (key-value pairs). Content-Type is set automatically to "application/json"
 
 #### Returns
 
@@ -442,7 +460,7 @@ optional headers to set (key-value pairs). Content-Type is set automatically to 
 
 > **sendPlain**(`res?`, `text?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:528
+Defined in: index.ts:546
 
 Send a plaintext response. If text is not provided, it will send a an empty string with status 200,ok.
 
@@ -478,7 +496,7 @@ optional headers to set (key-value pairs). Content-Type is set automatically to 
 
 > **setMaxAge**(`res`, `maxAge`): `void`
 
-Defined in: index.ts:584
+Defined in: index.ts:602
 
 #### Parameters
 
@@ -524,15 +542,59 @@ Stop the server. No requests are accepted after this method is called.
 
 `Promise`\<`void`\>
 
+A promise that resolves when the server has stopped
+
+***
+
+### createJWT()
+
+> `static` **createJWT**(`secret`, `user`, `properties?`): `object`
+
+Defined in: index.ts:310
+
+Static helper method to create a JWT token
+
+#### Parameters
+
+##### secret
+
+`string`
+
+The secret used to sign the token
+
+##### user
+
+`string`
+
+The user object to include in the token payload
+
+##### properties?
+
+`any`
+
+#### Returns
+
+`object`
+
+An object containing the token and its expiration date
+
+##### token
+
+> **token**: `string`
+
+##### validUntil
+
+> **validUntil**: `Date`
+
 ***
 
 ### decodeJWT()
 
 > `static` **decodeJWT**(`token`, `jwt_secret?`, `checkExpire?`): `any`
 
-Defined in: index.ts:281
+Defined in: index.ts:283
 
-Static helper method to decode an existing JWT Token
+Static helper method to decode an existing JWT token
 
 #### Parameters
 
@@ -540,13 +602,19 @@ Static helper method to decode an existing JWT Token
 
 `string`
 
+The JWT token to decode
+
 ##### jwt\_secret?
 
 `string`
 
+The secret used to verify the token
+
 ##### checkExpire?
 
 `boolean` = `true`
+
+Whether to check if the token has expired
 
 #### Returns
 

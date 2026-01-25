@@ -1,4 +1,4 @@
-[**@rgwch/mikrorest v0.8.0**](../README.md)
+[**@rgwch/mikrorest v0.9.0**](../README.md)
 
 ***
 
@@ -18,7 +18,7 @@ Defined in: index.ts:35
 
 Defined in: index.ts:46
 
-CORS settings: Allowed headers headers in development mode (default: ['Content-Type', 'Authorization'])
+CORS settings: Allowed headers in development mode (default: ['Content-Type', 'Authorization'])
 
 ***
 
@@ -28,7 +28,7 @@ CORS settings: Allowed headers headers in development mode (default: ['Content-T
 
 Defined in: index.ts:52
 
-CORS settings: Allowed headers headers in production mode (default: ['Content-Type', 'Authorization'])
+CORS settings: Allowed headers in production mode (default: ['Content-Type', 'Authorization'])
 
 ***
 
