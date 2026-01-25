@@ -300,6 +300,26 @@ export class MikroRest {
       return null;
     }
   }
+
+  /**
+   * Static helper method to create a JWT token
+   * @param secret The secret used to sign the token
+   * @param user The user object to include in the token payload
+   * @returns An object containing the token and its expiration date
+   */
+  public static createJWT(secret: string, user: string, properties?: any): { token: string, validUntil: Date } {
+    const expiration = parseInt(process.env.MIKROREST_JWT_EXPIRATION || '60'); // in minutes
+    const validUntil = new Date(Date.now() + expiration * 60000);
+    const payload: { [key: string]: any } = { user, exp: validUntil };
+    if (properties) {
+      for (const [key, value] of Object.entries(properties)) {
+        payload[key] = value;
+      }
+    }
+    const jwt = require('jwt-simple');
+    const token = jwt.encode(payload, secret);
+    return { token, validUntil }
+  }
   /**
    * Built-in authorization: Check header for Bearer or Token and a key supplied in the environment variable MIKROREST_API_KEYS,
    * or check for a valid JWT token if MIKROREST_JWT_SECRET is set.
@@ -371,11 +391,7 @@ export class MikroRest {
               throw new Error("MIKROREST_JWT_SECRET environment variable not set");
             }
             // Create a token with username and expiration (e.g. 1 hour)
-            const expiration = parseInt(process.env.MIKROREST_JWT_EXPIRATION || '60'); // in minutes
-            const validUntil = new Date(Date.now() + expiration * 60000);
-            const payload = { username: body.username, exp: validUntil };
-            const token = jwt.encode(payload, secret);
-            // Print the token to the console
+            const { token, validUntil } = MikroRest.createJWT(secret, body.username);
             logger.debug(`User ${body.username} logged in, token: ${token}`);
             this.sendJson(res, { token: token, expires: validUntil, user: user });
             return false; // Stop further processing
