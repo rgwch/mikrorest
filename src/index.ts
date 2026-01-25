@@ -307,15 +307,10 @@ export class MikroRest {
    * @param user The user object to include in the token payload
    * @returns An object containing the token and its expiration date
    */
-  public static createJWT(secret: string, user: string, properties?: any): { token: string, validUntil: Date } {
+  public static createJWT(secret: string, user: any): { token: string, validUntil: Date } {
     const expiration = parseInt(process.env.MIKROREST_JWT_EXPIRATION || '60'); // in minutes
     const validUntil = new Date(Date.now() + expiration * 60000);
-    const payload: { [key: string]: any } = { user, exp: validUntil };
-    if (properties) {
-      for (const [key, value] of Object.entries(properties)) {
-        payload[key] = value;
-      }
-    }
+    const payload = { user, exp: validUntil };
     const jwt = require('jwt-simple');
     const token = jwt.encode(payload, secret);
     return { token, validUntil }
@@ -327,6 +322,7 @@ export class MikroRest {
    * @param req The incoming request
    * @param res The server response
    * @returns true if authorization succeeded.
+   * Note: later handlers in the chain can access the decoded token via req.user
    */
   public async authorize(req: IncomingMessage, res: ServerResponse): Promise<boolean> {
     function badRequest() {
@@ -391,7 +387,7 @@ export class MikroRest {
               throw new Error("MIKROREST_JWT_SECRET environment variable not set");
             }
             // Create a token with username and expiration (e.g. 1 hour)
-            const { token, validUntil } = MikroRest.createJWT(secret, body.username);
+            const { token, validUntil } = MikroRest.createJWT(secret, user);
             logger.debug(`User ${body.username} logged in, token: ${token}`);
             this.sendJson(res, { token: token, expires: validUntil, user: user });
             return false; // Stop further processing
