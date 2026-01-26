@@ -1,4 +1,4 @@
-**@rgwch/mikrorest v0.9.1**
+**@rgwch/mikrorest v0.9.2**
 
 ***
 

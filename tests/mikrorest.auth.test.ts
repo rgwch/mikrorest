@@ -153,18 +153,18 @@ describe('MikroRest Authentication Tests', () => {
     it("should check JWT with expiry check", () => {
         const jwt = require('jwt-simple');
         const testtoken = jwt.encode({ "foo": "bar", exp: new Date(Date.now() + 10000) }, process.env.MIKROREST_JWT_SECRET)
-        const decoded = MikroRest.decodeJWT(testtoken, process.env.MIKROREST_JWT_SECRET!)
+        const decoded = MikroRest.decodeJWT(testtoken)
         expect(decoded).not.toBeNull()
         expect(decoded.foo).toEqual("bar")
         const testtoken2 = jwt.encode({ "foo": "bar", exp: new Date(Date.now() - 10) }, process.env.MIKROREST_JWT_SECRET)
-        const decoded2 = MikroRest.decodeJWT(testtoken2, process.env.MIKROREST_JWT_SECRET!)
+        const decoded2 = MikroRest.decodeJWT(testtoken2)
         expect(decoded2).toBeNull()
 
     })
     it("should check JWT without expiry check", () => {
         const jwt = require('jwt-simple');
         const testtoken = jwt.encode({ "foo": "bar", exp: new Date(Date.now() - 10000) }, process.env.MIKROREST_JWT_SECRET)
-        const decoded = MikroRest.decodeJWT(testtoken, process.env.MIKROREST_JWT_SECRET!, false)
+        const decoded = MikroRest.decodeJWT(testtoken, false)
         expect(decoded).not.toBeNull()
         expect(decoded.foo).toEqual("bar")
     })

@@ -280,19 +280,19 @@ export class MikroRest {
    * @param checkExpire Whether to check if the token has expired
    * @returns the decoded token or null if it could not be decoded or was not valid
    */
-  public static decodeJWT(token: string, jwt_secret?: string, checkExpire = true): any | null {
+  public static decodeJWT(token: string, checkExpire = true): any | null {
     try {
       const jwt = require('jwt-simple');
-      if (jwt_secret) {
-        const decoded = jwt.decode(token, jwt_secret);
-        if (decoded && (!checkExpire || (decoded.exp && new Date(decoded.exp) > new Date()))) {
-          return decoded;
-        } else {
-          logger.warning("JWT token expired or invalid: " + token);
-          return null;
-        }
+      const jwt_secret = process.env.MIKROREST_JWT_SECRET;
+      if (!jwt_secret) {
+        logger.error("No JWT_SECRET configured");
+        return null;
+      }
+      const decoded = jwt.decode(token, jwt_secret);
+      if (decoded && (!checkExpire || (decoded.exp && new Date(decoded.exp) > new Date()))) {
+        return decoded;
       } else {
-        logger.error("jwt_secret not set");
+        logger.warning("JWT token expired or invalid: " + token);
         return null;
       }
     } catch (err) {
@@ -307,7 +307,12 @@ export class MikroRest {
    * @param user The user object to include in the token payload
    * @returns An object containing the token and its expiration date
    */
-  public static createJWT(secret: string, user: any): { token: string, validUntil: Date } {
+  public static createJWT(user: any): { token: string, validUntil: Date } {
+    const secret= process.env.MIKROREST_JWT_SECRET
+    if (!secret) {
+      logger.error("MIKROREST_JWT_SECRET environment variable not set");
+      throw new Error("MIKROREST_JWT_SECRET environment variable not set");
+    }
     const expiration = parseInt(process.env.MIKROREST_JWT_EXPIRATION || '60'); // in minutes
     const validUntil = new Date(Date.now() + expiration * 60000);
     const payload = { user, exp: validUntil };
@@ -342,7 +347,17 @@ export class MikroRest {
         return true
       } else {
         try {
-          const decoded = MikroRest.decodeJWT(key, process.env.MIKROREST_JWT_SECRET);
+          const jwt_secret = process.env.MIKROREST_JWT_SECRET;
+          if (!jwt_secret) {
+            logger.error("No JWT_SECRET configured");
+            if (res) {
+              res.statusCode = 500;
+              res.setHeader('Content-Type', 'text/plain');
+              res.end("Server not configured for JWT");
+            }
+            return false;
+          }
+          const decoded = MikroRest.decodeJWT(key);
           if (decoded) {
             (req as any).user = decoded; // attach decoded token to request object
             return true;
@@ -387,7 +402,7 @@ export class MikroRest {
               throw new Error("MIKROREST_JWT_SECRET environment variable not set");
             }
             // Create a token with username and expiration (e.g. 1 hour)
-            const { token, validUntil } = MikroRest.createJWT(secret, user);
+            const { token, validUntil } = MikroRest.createJWT(user);
             logger.debug(`User ${body.username} logged in, token: ${token}`);
             this.sendJson(res, { token: token, expires: validUntil, user: user });
             return false; // Stop further processing
