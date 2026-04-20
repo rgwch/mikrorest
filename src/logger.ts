@@ -1,5 +1,5 @@
 /************************************************
- * This file is part of the CheckAlive project
+ * This file is part of the MikroRest project
  * Copyright (c) 2025
  * License: MIT
  ************************************************/

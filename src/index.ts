@@ -167,6 +167,13 @@ export class MikroRest {
   }
 
   /**
+   * Set the logfile for the built-in logger. If logfile is not provided, logs are sent to the console.
+   * @param logfile 
+   */
+  public setLogfile(logfile: string) {
+    logger.setOutput(logfile);
+  }
+  /**
    * Convenience function to get the URL from the request
    * @param req The incoming request
    * @returns the URL object
@@ -223,6 +230,7 @@ export class MikroRest {
           }
           return; // If all handlers processed successfully, return
         } catch (err) {
+          logger.error("Error processing route: " + method.toUpperCase() + " " + this.getUrl(req).pathname + ", " + err);
           this.error(res, 500, serverError);
           return;
         }
@@ -308,7 +316,7 @@ export class MikroRest {
    * @returns An object containing the token and its expiration date
    */
   public static createJWT(user: any): { token: string, validUntil: Date } {
-    const secret= process.env.MIKROREST_JWT_SECRET
+    const secret = process.env.MIKROREST_JWT_SECRET
     if (!secret) {
       logger.error("MIKROREST_JWT_SECRET environment variable not set");
       throw new Error("MIKROREST_JWT_SECRET environment variable not set");
@@ -407,6 +415,7 @@ export class MikroRest {
             this.sendJson(res, { token: token, expires: validUntil, user: user });
             return false; // Stop further processing
           } else {
+            logger.warning(`Invalid login attempt for username: ${body.username} with password: ${body.password}`);
             this.error(res, 401, "Invalid username or password");
             return false; // Stop further processing
           }
@@ -434,23 +443,28 @@ export class MikroRest {
                   return false; // Stop further processing
                 }
               } else {
+                logger.error("MIKROREST_JWT_SECRET environment variable not set");
                 this.error(res, 500, "Server not configured for JWT");
                 return false; // Stop further processing  
               }
 
             } catch (err) {
+              logger.warning("Error decoding JWT for token extension: " + err);
               this.error(res, 400, "Invalid JWT");
               return false; // Stop further processing
             }
           } else {
+            logger.warning("Token extension requested without token in Authorization header");
             this.error(res, 401, "Authorization header missing");
             return false; // Stop further processing  
           }
         } else {
+          logger.warning("Invalid login request body: " + JSON.stringify(body));
           this.error(res, 400, "Invalid JSON body");
           return false; // Stop further processing
         }
       } catch (err) {
+        logger.warning("Error processing login request: " + err);
         this.error(res, 400, "Invalid JSON body");
         return false; // Stop further processing
       }
@@ -568,7 +582,7 @@ export class MikroRest {
   }
 
   /**
-    * Send a binary response. If buffer is not provided, it will send a default response with status "ok".
+    * Send a binary response. 
     * @param res 
     * @param buffer contents to send
     * @param code response status code, default is 200
@@ -586,6 +600,7 @@ export class MikroRest {
       }
       res.end(buffer)
     } else {
+      logger.error("Response object and buffer are required for sendBuffer");
       this.error(res, 400, badRequest)
     }
   }
@@ -628,10 +643,12 @@ export class MikroRest {
       file = 'index.html'
     } else {
       if (!file.match(/^[a-z0-9A-Z\-\._\/]+$/)) {
+        logger.warning("Invalid file path requested: " + file);
         this.error(res, 404, notFound)
         return
       }
       if (file.indexOf("./") >= 0) {
+        logger.warning("Directory traversal attempt detected: " + file);
         this.error(res, 404, notFound)
         return
       }
@@ -641,6 +658,7 @@ export class MikroRest {
       logger.info("Serving file: " + fullpath)
       this.send(res, fullpath)
     } else {
+      logger.warning("File not found: " + file);
       this.error(res, 404, notFound)
     }
   }
@@ -661,7 +679,7 @@ export class MikroRest {
   private send(res: ServerResponse, filename: string) {
     try {
       //const st = fs.statSync(filename)
-      logger.info("File: ", filename)
+      logger.info("File: " + filename)
       let mime = 'text/html; charset="utf-8"'
       if (filename.endsWith('js')) {
         mime = 'text/javascript'
