@@ -284,7 +284,6 @@ export class MikroRest {
   /**
    * Static helper method to decode an existing JWT token
    * @param token The JWT token to decode
-   * @param jwt_secret The secret used to verify the token
    * @param checkExpire Whether to check if the token has expired
    * @returns the decoded token or null if it could not be decoded or was not valid
    */
@@ -311,7 +310,6 @@ export class MikroRest {
 
   /**
    * Static helper method to create a JWT token
-   * @param secret The secret used to sign the token
    * @param user The user object to include in the token payload
    * @returns An object containing the token and its expiration date
    */

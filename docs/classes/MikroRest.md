@@ -1,4 +1,4 @@
-[**@rgwch/mikrorest v0.9.2**](../README.md)
+[**@rgwch/mikrorest v0.9.3**](../README.md)
 
 ***
 
@@ -105,7 +105,7 @@ Error if the directory does not exist
 
 > **authorize**(`req`, `res`): `Promise`\<`boolean`\>
 
-Defined in: index.ts:332
+Defined in: index.ts:338
 
 Built-in authorization: Check header for Bearer or Token and a key supplied in the environment variable MIKROREST_API_KEYS,
 or check for a valid JWT token if MIKROREST_JWT_SECRET is set.
@@ -152,7 +152,7 @@ Clears all routes and static directories
 
 > **error**(`res?`, `code?`, `text?`, `headers?`): `void`
 
-Defined in: index.ts:599
+Defined in: index.ts:612
 
 Send an error response
 
@@ -190,7 +190,7 @@ Optional headers to set (key-value pairs). Content-Type is set automatically to 
 
 > **getParams**(`req`): `URLSearchParams`
 
-Defined in: index.ts:183
+Defined in: index.ts:190
 
 Convenience function to get the query parameters from the request
 
@@ -214,7 +214,7 @@ The URL search parameters
 
 > **getRoutes**(): `Map`\<`string`, [`MikroRestRoute`](../interfaces/MikroRestRoute.md)\>
 
-Defined in: index.ts:191
+Defined in: index.ts:198
 
 Get all routes as a Map
 
@@ -230,7 +230,7 @@ all routes defined so far
 
 > **getUrl**(`req`): `URL`
 
-Defined in: index.ts:174
+Defined in: index.ts:181
 
 Convenience function to get the URL from the request
 
@@ -254,7 +254,7 @@ the URL object
 
 > **handleLogin**(`loginRoute`, `authenticate`): `void`
 
-Defined in: index.ts:391
+Defined in: index.ts:397
 
 Let MikroRest handle login for you. Supply a route and function that checks username and password and returns an (arbitrary) object 
 if they are valid or null if not.
@@ -289,7 +289,7 @@ an async function that checks username and password and resolves to a (User-) Ob
 
 > **readBodyBuffer**(`req`): `Promise`\<`Buffer`\<`ArrayBufferLike`\>\>
 
-Defined in: index.ts:496
+Defined in: index.ts:508
 
 Read the request body as Buffer
 
@@ -317,7 +317,7 @@ Error if the request body is not valid
 
 > **readJsonBody**(`req`, `res?`): `Promise`\<`any`\>
 
-Defined in: index.ts:469
+Defined in: index.ts:481
 
 Read the request body as JSON
 
@@ -347,9 +347,9 @@ Error if the request body is not valid JSON
 
 > **sendBuffer**(`res?`, `buffer?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:578
+Defined in: index.ts:590
 
-Send a binary response. If buffer is not provided, it will send a default response with status "ok".
+Send a binary response.
 
 #### Parameters
 
@@ -387,7 +387,7 @@ Error if res or buffer is not provided
 
 > **sendHtml**(`res?`, `body?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:538
+Defined in: index.ts:550
 
 Send a HTML response. If body is not provided, it will send an empty response with status 200,ok.
 
@@ -423,7 +423,7 @@ optional headers to set (key-value pairs). Content-Type is set automatically to 
 
 > **sendJson**(`res?`, `body?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:518
+Defined in: index.ts:530
 
 Send a JSON response. If body is not provided, it will send a default response with {"status": "ok"}.
 
@@ -461,7 +461,7 @@ Optional headers to set (key-value pairs). Content-Type is set automatically to 
 
 > **sendPlain**(`res?`, `text?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:557
+Defined in: index.ts:569
 
 Send a plaintext response. If text is not provided, it will send a an empty string with status 200,ok.
 
@@ -493,11 +493,31 @@ optional headers to set (key-value pairs). Content-Type is set automatically to 
 
 ***
 
+### setLogfile()
+
+> **setLogfile**(`logfile`): `void`
+
+Defined in: index.ts:173
+
+Set the logfile for the built-in logger. If logfile is not provided, logs are sent to the console.
+
+#### Parameters
+
+##### logfile
+
+`string`
+
+#### Returns
+
+`void`
+
+***
+
 ### setMaxAge()
 
 > **setMaxAge**(`res`, `maxAge`): `void`
 
-Defined in: index.ts:613
+Defined in: index.ts:626
 
 #### Parameters
 
@@ -519,7 +539,7 @@ Defined in: index.ts:613
 
 > **start**(): `any`
 
-Defined in: index.ts:238
+Defined in: index.ts:246
 
 Launch the server. routes and static directories can be added before or after calling this method.
 
@@ -535,7 +555,7 @@ the HTTP server instance
 
 > **stop**(): `Promise`\<`void`\>
 
-Defined in: index.ts:264
+Defined in: index.ts:272
 
 Stop the server. No requests are accepted after this method is called.
 
@@ -551,7 +571,7 @@ A promise that resolves when the server has stopped
 
 > `static` **createJWT**(`user`): `object`
 
-Defined in: index.ts:310
+Defined in: index.ts:316
 
 Static helper method to create a JWT token
 
@@ -583,7 +603,7 @@ An object containing the token and its expiration date
 
 > `static` **decodeJWT**(`token`, `checkExpire`): `any`
 
-Defined in: index.ts:283
+Defined in: index.ts:290
 
 Static helper method to decode an existing JWT token
 
