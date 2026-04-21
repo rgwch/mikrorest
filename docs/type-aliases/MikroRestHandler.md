@@ -1,10 +1,10 @@
-[**@rgwch/mikrorest v0.9.3**](../README.md)
+[**@rgwch/mikrorest v1.0.0**](../README.md)
 
 ***
 
 [@rgwch/mikrorest](../globals.md) / MikroRestHandler
 
-# Type Alias: MikroRestHandler()
+# Type Alias: MikroRestHandler
 
 > **MikroRestHandler** = (`req`, `res`) => `Promise`\<`boolean`\>
 

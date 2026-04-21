@@ -1,4 +1,4 @@
-[**@rgwch/mikrorest v0.9.3**](../README.md)
+[**@rgwch/mikrorest v1.0.0**](../README.md)
 
 ***
 
@@ -150,13 +150,17 @@ Clears all routes and static directories
 
 ### error()
 
-> **error**(`res?`, `code?`, `text?`, `headers?`): `void`
+> **error**(`req`, `res?`, `code?`, `text?`, `headers?`): `void`
 
 Defined in: index.ts:612
 
 Send an error response
 
 #### Parameters
+
+##### req
+
+`IncomingMessage` \| `undefined`
 
 ##### res?
 
@@ -517,7 +521,7 @@ Set the logfile for the built-in logger. If logfile is not provided, logs are se
 
 > **setMaxAge**(`res`, `maxAge`): `void`
 
-Defined in: index.ts:626
+Defined in: index.ts:630
 
 #### Parameters
 
@@ -601,7 +605,7 @@ An object containing the token and its expiration date
 
 ### decodeJWT()
 
-> `static` **decodeJWT**(`token`, `checkExpire`): `any`
+> `static` **decodeJWT**(`token`, `checkExpire?`): `any`
 
 Defined in: index.ts:290
 
@@ -615,7 +619,7 @@ Static helper method to decode an existing JWT token
 
 The JWT token to decode
 
-##### checkExpire
+##### checkExpire?
 
 `boolean` = `true`
 

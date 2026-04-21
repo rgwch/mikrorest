@@ -231,11 +231,11 @@ export class MikroRest {
           return; // If all handlers processed successfully, return
         } catch (err) {
           logger.error("Error processing route: " + method.toUpperCase() + " " + this.getUrl(req).pathname + ", " + err);
-          this.error(res, 500, serverError);
+          this.error(req, res, 500, serverError);
           return;
         }
       } // no route found
-      this.handleFile(res, new URL(req.url!, `http://${req.headers.host}`));
+      this.handleFile(req, res, new URL(req.url!, `http://${req.headers.host}`));
     }
   }
 
@@ -414,7 +414,7 @@ export class MikroRest {
             return false; // Stop further processing
           } else {
             logger.warning(`Invalid login attempt for username: ${body.username} with password: ${body.password}`);
-            this.error(res, 401, "Invalid username or password");
+            this.error(req, res, 401, "Invalid username or password");
             return false; // Stop further processing
           }
         } else if (body.extend) {
@@ -437,33 +437,33 @@ export class MikroRest {
                   this.sendJson(res, { token: token, expires: validUntil }); // expiration in minutes
                   return false; // Stop further processing
                 } else {
-                  this.error(res, 401, "Token expired or invalid");
+                  this.error(req, res, 401, "Token expired or invalid");
                   return false; // Stop further processing
                 }
               } else {
                 logger.error("MIKROREST_JWT_SECRET environment variable not set");
-                this.error(res, 500, "Server not configured for JWT");
+                this.error(req, res, 500, "Server not configured for JWT");
                 return false; // Stop further processing  
               }
 
             } catch (err) {
               logger.warning("Error decoding JWT for token extension: " + err);
-              this.error(res, 400, "Invalid JWT");
+              this.error(req, res, 400, "Invalid JWT");
               return false; // Stop further processing
             }
           } else {
             logger.warning("Token extension requested without token in Authorization header");
-            this.error(res, 401, "Authorization header missing");
+            this.error(req, res, 401, "Authorization header missing");
             return false; // Stop further processing  
           }
         } else {
           logger.warning("Invalid login request body: " + JSON.stringify(body));
-          this.error(res, 400, "Invalid JSON body");
+          this.error(req, res, 400, "Invalid JSON body");
           return false; // Stop further processing
         }
       } catch (err) {
         logger.warning("Error processing login request: " + err);
-        this.error(res, 400, "Invalid JSON body");
+        this.error(req, res, 400, "Invalid JSON body");
         return false; // Stop further processing
       }
     });
@@ -599,7 +599,7 @@ export class MikroRest {
       res.end(buffer)
     } else {
       logger.error("Response object and buffer are required for sendBuffer");
-      this.error(res, 400, badRequest)
+      this.error(undefined, res, 400, badRequest)
     }
   }
   /**
@@ -609,8 +609,12 @@ export class MikroRest {
    * @param text Text to send, defaults to "Internal Server Error"
    * @param headers Optional headers to set (key-value pairs). Content-Type is set automatically to "text/plain" if not provided
    */
-  public error(res?: ServerResponse, code?: number, text?: string, headers?: { [key: string]: string }) {
-    logger.error("Error: " + text)
+  public error(req: IncomingMessage | undefined, res?: ServerResponse, code?: number, text?: string, headers?: { [key: string]: string }) {
+    if (req && req.url) {
+      logger.error(`Error ${code ?? 500} for ${req.url}: ${text ?? serverError}`);
+    } else {
+      logger.error("Error: " + text)
+    }
     if (res) {
       res.statusCode = code ?? 500
       res.setHeader('Content-Type', 'text/plain')
@@ -635,29 +639,29 @@ export class MikroRest {
   * 404 "Not Found" is sent. If a file is found, it is sent with the correct content-type header according to the file extension.
   * (Known types are: js, css, svg, jpg, txt, pdf. All other files are sent as "text/html; charset=utf-8")
   **/
-  private handleFile(res: ServerResponse, url: URL) {
+  private handleFile(req: IncomingMessage, res: ServerResponse, url: URL) {
     let file = url.pathname
     if (!file || file === '/' || file === '') {
       file = 'index.html'
     } else {
       if (!file.match(/^[a-z0-9A-Z\-\._\/]+$/)) {
-        logger.warning("Invalid file path requested: " + file);
-        this.error(res, 404, notFound)
+        logger.warning("Invalid file path requested: " + file + " from " + req.url);
+        this.error(req, res, 404, notFound)
         return
       }
       if (file.indexOf("./") >= 0) {
-        logger.warning("Directory traversal attempt detected: " + file);
-        this.error(res, 404, notFound)
+        logger.warning("Directory traversal attempt detected: " + file + " from " + req.url);
+        this.error(req, res, 404, notFound)
         return
       }
     }
     const fullpath = this.findFile(file);
     if (fullpath) {
-      logger.info("Serving file: " + fullpath)
+      logger.info("Serving file: " + fullpath + " for " + req.url);
       this.send(res, fullpath)
     } else {
-      logger.warning("File not found: " + file);
-      this.error(res, 404, notFound)
+      logger.warning("File not found: " + file + " from " + req.url);
+      this.error(req, res, 404, notFound)
     }
   }
   private findFile(filename: string): string | null {
@@ -701,12 +705,12 @@ export class MikroRest {
       })
       read.on('error', (err) => {
         logger.error("Error reading file: " + filename + ", " + err)
-        this.error(res, 500, serverError)
+        this.error(undefined, res, 500, serverError)
       })
       read.pipe(res)
     } catch (err) {
       logger.error("Error sending file: " + filename + ", " + err)
-      this.error(res, 500, serverError)
+      this.error(undefined, res, 500, serverError)
     }
   }
 
