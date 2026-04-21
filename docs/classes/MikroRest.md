@@ -521,7 +521,7 @@ Set the logfile for the built-in logger. If logfile is not provided, logs are se
 
 > **setMaxAge**(`res`, `maxAge`): `void`
 
-Defined in: index.ts:630
+Defined in: index.ts:631
 
 #### Parameters
 

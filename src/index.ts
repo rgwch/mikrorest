@@ -368,16 +368,16 @@ export class MikroRest {
             (req as any).user = decoded; // attach decoded token to request object
             return true;
           } else {
-            logger.warning("JWT token expired or invalid: " + key);
+            logger.warning(`JWT token from ${req?.headers?.origin || ""} expired or invalid: ${key}`);
             return badRequest();
           }
         } catch (err) {
-          logger.warning("Unauthorized access with key: " + key);
+          logger.warning(`Unauthorized access with key from ${req?.headers?.origin || ""}: ${key}`);
           return badRequest();
         }
       }
     } else {
-      logger.warning("Unauthorized access without key: " + auth);
+      logger.warning(`Unauthorized access without key from ${req?.headers?.origin || ""}: ${auth}`);
       return badRequest();
     }
   }
@@ -413,7 +413,7 @@ export class MikroRest {
             this.sendJson(res, { token: token, expires: validUntil, user: user });
             return false; // Stop further processing
           } else {
-            logger.warning(`Invalid login attempt for username: ${body.username} with password: ${body.password}`);
+            logger.warning(`Invalid login attempt for username: ${body.username} with password: ${body.password} from ${req?.headers?.origin || ""}`);
             this.error(req, res, 401, "Invalid username or password");
             return false; // Stop further processing
           }
@@ -447,7 +447,7 @@ export class MikroRest {
               }
 
             } catch (err) {
-              logger.warning("Error decoding JWT for token extension: " + err);
+              logger.warning(`Error decoding JWT for token extension from ${req?.headers?.origin || ""}: ${err}`);
               this.error(req, res, 400, "Invalid JWT");
               return false; // Stop further processing
             }
@@ -610,8 +610,9 @@ export class MikroRest {
    * @param headers Optional headers to set (key-value pairs). Content-Type is set automatically to "text/plain" if not provided
    */
   public error(req: IncomingMessage | undefined, res?: ServerResponse, code?: number, text?: string, headers?: { [key: string]: string }) {
-    if (req && req.url) {
-      logger.error(`Error ${code ?? 500} for ${req.url}: ${text ?? serverError}`);
+    const origin = req?.headers?.origin ?? "";
+    if (req && origin) {
+      logger.error(`Error ${code ?? 500} for ${req.url} from ${origin}: ${text ?? serverError}`);
     } else {
       logger.error("Error: " + text)
     }
