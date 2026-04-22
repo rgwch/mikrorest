@@ -701,6 +701,10 @@ export class MikroRest {
         mime = 'text/plain'
       } else if (filename.endsWith('pdf')) {
         mime = 'application/pdf'
+      } else if (filename.endsWith("ico")) {
+        mime = 'image/x-icon'
+      } else if (filename.endsWith("txt")) {
+        mime = 'text/plain'
       }
       res.setHeader('Content-Type', mime)
       this.setMaxAge(res, 3600)
