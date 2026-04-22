@@ -1,4 +1,4 @@
-[**@rgwch/mikrorest v0.9.3**](../README.md)
+[**@rgwch/mikrorest v1.0.0**](../README.md)
 
 ***
 
@@ -14,7 +14,7 @@ Defined in: index.ts:35
 
 ### allowedHeadersDevel?
 
-> `optional` **allowedHeadersDevel**: `string`[]
+> `optional` **allowedHeadersDevel?**: `string`[]
 
 Defined in: index.ts:46
 
@@ -24,7 +24,7 @@ CORS settings: Allowed headers in development mode (default: ['Content-Type', 'A
 
 ### allowedHeadersProd?
 
-> `optional` **allowedHeadersProd**: `string`[]
+> `optional` **allowedHeadersProd?**: `string`[]
 
 Defined in: index.ts:52
 
@@ -34,7 +34,7 @@ CORS settings: Allowed headers in production mode (default: ['Content-Type', 'Au
 
 ### allowedMethodsDevel?
 
-> `optional` **allowedMethodsDevel**: `string`[]
+> `optional` **allowedMethodsDevel?**: `string`[]
 
 Defined in: index.ts:48
 
@@ -44,7 +44,7 @@ CORS settings: Allowed methods in development mode (default: ['GET', 'POST', 'OP
 
 ### allowedMethodsProd?
 
-> `optional` **allowedMethodsProd**: `string`[]
+> `optional` **allowedMethodsProd?**: `string`[]
 
 Defined in: index.ts:54
 
@@ -54,7 +54,7 @@ CORS settings: Allowed methods in production mode (default: ['GET', 'POST', 'OPT
 
 ### allowedOriginsDevel?
 
-> `optional` **allowedOriginsDevel**: `string`[]
+> `optional` **allowedOriginsDevel?**: `string`[]
 
 Defined in: index.ts:50
 
@@ -64,7 +64,7 @@ CORS settings: Allowed origins in development mode (default: ['*'])
 
 ### allowedOriginsProd?
 
-> `optional` **allowedOriginsProd**: `string`[]
+> `optional` **allowedOriginsProd?**: `string`[]
 
 Defined in: index.ts:56
 
@@ -74,7 +74,7 @@ CORS settings: Allowed origins in production mode (default: [''])
 
 ### port?
 
-> `optional` **port**: `number`
+> `optional` **port?**: `number`
 
 Defined in: index.ts:37
 
@@ -84,7 +84,7 @@ Port number for the server (default: 3339 or value of environment variable MIKRO
 
 ### ssl?
 
-> `optional` **ssl**: `object`
+> `optional` **ssl?**: `object`
 
 Defined in: index.ts:39
 

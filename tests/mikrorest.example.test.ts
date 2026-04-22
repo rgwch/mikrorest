@@ -59,7 +59,7 @@ describe('MikroRest Custom Usage Example', () => {
         };
 
         // Test custom error handling
-        mikroRest.error(mockResponse, 422, 'Validation Error');
+        mikroRest.error(undefined, mockResponse, 422, 'Validation Error');
 
         expect(mockResponse.statusCode).toBe(422);
         expect(mockResponse.setHeader).toHaveBeenCalledWith('Content-Type', 'text/plain');

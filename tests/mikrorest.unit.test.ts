@@ -232,7 +232,7 @@ describe('MikroRest Unit Tests', () => {
 
         describe('error', () => {
             it('should send error response with custom code and message', () => {
-                mikroRest.error(mockRes, 404, 'Not Found');
+                mikroRest.error(undefined, mockRes, 404, 'Not Found');
 
                 expect(mockRes.statusCode).toBe(404);
                 expect(mockRes.setHeader).toHaveBeenCalledWith('Content-Type', 'text/plain');
@@ -240,7 +240,7 @@ describe('MikroRest Unit Tests', () => {
             });
 
             it('should send default error response', () => {
-                mikroRest.error(mockRes);
+                mikroRest.error(undefined,mockRes);
 
                 expect(mockRes.statusCode).toBe(500);
                 expect(mockRes.end).toHaveBeenCalledWith('Internal Server Error');
@@ -248,7 +248,7 @@ describe('MikroRest Unit Tests', () => {
 
             it('should handle undefined response object', () => {
                 expect(() => {
-                    mikroRest.error(undefined, 500, 'Test error');
+                    mikroRest.error(undefined, undefined, 500, 'Test error');
                 }).not.toThrow();
             });
         });
