@@ -1,4 +1,4 @@
-import { createServer, IncomingMessage, ServerResponse } from "http";
+import { createServer, get, IncomingMessage, ServerResponse } from "http";
 import { createServer as createSSlServer } from "https";
 import { logger } from "./logger";
 const pck = require('../package.json')
@@ -203,7 +203,7 @@ export class MikroRest {
     const method = req.method?.toLowerCase() ?? "get"
     const origin = req.headers.origin ?? "";
 
-    logger.debug('Requesting ' + req.url + ", method: " + method + ", origin: " + origin);
+    logger.debug('Requesting ' + req.url + ", method: " + method + ", origin: " + origin + ", from IP: " + getRealClientIP(req));
     // logger.debug("Headers: ", JSON.stringify(req.headers));
     if (this.allowedOrigins.includes("*") || this.allowedOrigins.includes(origin)) {
       res.setHeader('Access-Control-Allow-Origin', origin);
@@ -368,16 +368,16 @@ export class MikroRest {
             (req as any).user = decoded; // attach decoded token to request object
             return true;
           } else {
-            logger.warning(`JWT token from ${req?.headers?.origin || ""} expired or invalid: ${key}`);
+            logger.warning(`JWT token from ${getRealClientIP(req)} expired or invalid: ${key}`);
             return badRequest();
           }
         } catch (err) {
-          logger.warning(`Unauthorized access with key from ${req?.headers?.origin || ""}: ${key}`);
+          logger.warning(`Unauthorized access with key from ${getRealClientIP(req)}: ${key}`);
           return badRequest();
         }
       }
     } else {
-      logger.warning(`Unauthorized access without key from ${req?.headers?.origin || ""}: ${auth}`);
+      logger.warning(`Unauthorized access without key from ${getRealClientIP(req)}: ${auth}`);
       return badRequest();
     }
   }
@@ -413,7 +413,7 @@ export class MikroRest {
             this.sendJson(res, { token: token, expires: validUntil, user: user });
             return false; // Stop further processing
           } else {
-            logger.warning(`Invalid login attempt for username: ${body.username} with password: ${body.password} from ${req?.headers?.origin || ""}`);
+            logger.warning(`Invalid login attempt for username: ${body.username} with password: ${body.password} from ${getRealClientIP(req)}`);
             this.error(req, res, 401, "Invalid username or password");
             return false; // Stop further processing
           }
@@ -447,7 +447,7 @@ export class MikroRest {
               }
 
             } catch (err) {
-              logger.warning(`Error decoding JWT for token extension from ${req?.headers?.origin || ""}: ${err}`);
+              logger.warning(`Error decoding JWT for token extension from ${getRealClientIP(req)}: ${err}`);
               this.error(req, res, 400, "Invalid JWT");
               return false; // Stop further processing
             }
@@ -610,7 +610,7 @@ export class MikroRest {
    * @param headers Optional headers to set (key-value pairs). Content-Type is set automatically to "text/plain" if not provided
    */
   public error(req: IncomingMessage | undefined, res?: ServerResponse, code?: number, text?: string, headers?: { [key: string]: string }) {
-    const origin = req?.headers?.origin ?? "";
+    const origin = getRealClientIP(req);
     if (req && origin) {
       logger.error(`Error ${code ?? 500} for ${req.url} from ${origin}: ${text ?? serverError}`);
     } else {
@@ -645,23 +645,28 @@ export class MikroRest {
     if (!file || file === '/' || file === '') {
       file = 'index.html'
     } else {
+      if (file.match(/.*\.env.*/) || file.match(/.*config.*/)) {
+        logger.warning("Attempt to access sensitive file: " + file + " from " + getRealClientIP(req));
+        this.error(req, res, 404, "Asshole.")
+        return
+      }
       if (!file.match(/^[a-z0-9A-Z\-\._\/]+$/)) {
-        logger.warning("Invalid file path requested: " + file + " from " + req.url);
+        logger.warning("Invalid file path requested: " + file + " from " + getRealClientIP(req));
         this.error(req, res, 404, notFound)
         return
       }
       if (file.indexOf("./") >= 0) {
-        logger.warning("Directory traversal attempt detected: " + file + " from " + req.url);
+        logger.warning("Directory traversal attempt detected: " + file + " from " + getRealClientIP(req));
         this.error(req, res, 404, notFound)
         return
       }
     }
     const fullpath = this.findFile(file);
     if (fullpath) {
-      logger.info("Serving file: " + fullpath + " for " + req.url);
+      logger.info("Serving file: " + fullpath + " for " + req.url + " from " + getRealClientIP(req));
       this.send(res, fullpath)
     } else {
-      logger.warning("File not found: " + file + " from " + req.url);
+      logger.warning("File not found: " + file + " from " + getRealClientIP(req));
       this.error(req, res, 404, notFound)
     }
   }
@@ -718,3 +723,30 @@ export class MikroRest {
 
 }
 
+/**
+ * Do your best to extract the real client IP from request headers
+ * Checks common headers set by reverse proxies, load balancers, and CDNs
+ */
+function getRealClientIP(req?: IncomingMessage): string {
+  if (!req) return "unknown";
+  const headers = req.headers;
+
+  // Check X-Forwarded-For header (most common)
+  if (headers['x-forwarded-for']) {
+    // X-Forwarded-For can contain multiple IPs, take the first one (original client)
+    const forwardedFor = (headers['x-forwarded-for'] as string).split(',')[0].trim();
+    if (forwardedFor) return forwardedFor;
+  }
+
+  // Check other common headers
+  if (headers['x-real-ip']) return headers['x-real-ip'] as string;
+  if (headers['x-client-ip']) return headers['x-client-ip'] as string;
+  if (headers['cf-connecting-ip']) return headers['cf-connecting-ip'] as string; // Cloudflare
+  if (headers['x-cluster-client-ip']) return headers['x-cluster-client-ip'] as string;
+  if (headers['x-forwarded']) return headers['x-forwarded'] as string;
+  if (headers['forwarded-for']) return headers['forwarded-for'] as string;
+  if (headers['forwarded']) return headers['forwarded'] as string;
+
+  // Fallback to socket remote address
+  return req.socket.remoteAddress || 'unknown';
+}
