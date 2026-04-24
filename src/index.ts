@@ -638,10 +638,10 @@ export class MikroRest {
   * Send raw file from static directory. If more than one static directory was added, they are searched in the sequence they were added.
   * Some sanitizing is performed: Directory traversal and special characters are not allowed. If the file is not found,
   * 404 "Not Found" is sent. If a file is found, it is sent with the correct content-type header according to the file extension.
-  * (Known types are: js, css, svg, jpg, txt, pdf. All other files are sent as "text/html; charset=utf-8")
+  * (Known types are: js, css, svg, jpg, txt, pdf, ico, txt. All other files are sent as "text/html; charset=utf-8")
   **/
   private handleFile(req: IncomingMessage, res: ServerResponse, url: URL) {
-    let file = url.pathname
+    let file = url.pathname;
     if (!file || file === '/' || file === '') {
       file = 'index.html'
     } else {
@@ -689,23 +689,37 @@ export class MikroRest {
       //const st = fs.statSync(filename)
       logger.info("File: " + filename)
       let mime = 'text/html; charset="utf-8"'
-      if (filename.endsWith('js')) {
-        mime = 'text/javascript'
-      } else if (filename.endsWith('css')) {
-        mime = 'text/css'
-      } else if (filename.endsWith('svg')) {
-        mime = 'text/svg+xml'
-      } else if (filename.endsWith('jpg')) {
-        mime = 'image/jpeg'
-      } else if (filename.endsWith('txt')) {
-        mime = 'text/plain'
-      } else if (filename.endsWith('pdf')) {
-        mime = 'application/pdf'
-      } else if (filename.endsWith("ico")) {
-        mime = 'image/x-icon'
-      } else if (filename.endsWith("txt")) {
-        mime = 'text/plain'
+      const ext = path.extname(filename).toLowerCase();
+      switch (ext) {
+        case '.js':
+          mime = 'text/javascript';
+          break;
+        case '.css':
+          mime = 'text/css';
+          break;
+        case '.svg':
+          mime = 'image/svg+xml';
+          break;
+        case '.jpg':
+        case '.jpeg':
+          mime = 'image/jpeg';
+          break;
+        case '.png':
+          mime = 'image/png';
+          break;
+        case '.txt':
+          mime = 'text/plain';
+          break;
+        case '.pdf':
+          mime = 'application/pdf';
+          break;
+        case '.ico':
+          mime = 'image/x-icon';
+          break;
+        default:
+          mime = 'text/html; charset="utf-8"';
       }
+
       res.setHeader('Content-Type', mime)
       this.setMaxAge(res, 3600)
       const read = createReadStream(filename)
