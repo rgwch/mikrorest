@@ -626,6 +626,16 @@ export class MikroRest {
       this.error(undefined, res, 400, badRequest)
     }
   }
+
+  public sendFile(res?: ServerResponse, filepath?: string, code: number = 200, headers?: { [key: string]: string }) {
+    if (res && filepath) {
+      this.send(res, filepath)
+    } else {
+      logger.error("Response object and filepath are required for sendFile");
+      this.error(undefined, res, 400, badRequest)
+    }
+  }
+
   /**
    * Send an error response
    * @param res The server response
