@@ -152,7 +152,7 @@ Clears all routes and static directories
 
 > **error**(`req`, `res?`, `code?`, `text?`, `headers?`): `void`
 
-Defined in: index.ts:646
+Defined in: index.ts:653
 
 Send an error response
 
@@ -391,7 +391,9 @@ Error if res or buffer is not provided
 
 > **sendFile**(`res?`, `filepath?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:630
+Defined in: index.ts:637
+
+Send any file.
 
 #### Parameters
 
@@ -403,11 +405,17 @@ Defined in: index.ts:630
 
 `string`
 
+full absolute path
+
 ##### code?
 
 `number` = `200`
 
+response status code, default is 200
+
 ##### headers?
+
+optional headers to set (key-value pairs). Content-Type is set automatically based on the file type
 
 #### Returns
 
@@ -549,7 +557,7 @@ Set the logfile for the built-in logger. If logfile is not provided, logs are se
 
 > **setMaxAge**(`res`, `maxAge`): `void`
 
-Defined in: index.ts:680
+Defined in: index.ts:687
 
 #### Parameters
 

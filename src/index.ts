@@ -627,6 +627,13 @@ export class MikroRest {
     }
   }
 
+  /**
+   * Send any file.
+   * @param res 
+   * @param filepath full absolute path
+   * @param code response status code, default is 200
+   * @param headers optional headers to set (key-value pairs). Content-Type is set automatically based on the file type
+   */
   public sendFile(res?: ServerResponse, filepath?: string, code: number = 200, headers?: { [key: string]: string }) {
     if (res && filepath) {
       this.send(res, filepath)
