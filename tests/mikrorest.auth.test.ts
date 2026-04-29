@@ -20,6 +20,7 @@ describe('MikroRest Authentication Tests', () => {
     });
 
     afterEach(async () => {
+        jest.useRealTimers();
         if (mikroRest) {
             await mikroRest.stop();
             // Add a small delay to ensure the server is fully stopped
@@ -168,5 +169,89 @@ describe('MikroRest Authentication Tests', () => {
         expect(decoded).not.toBeNull()
         expect(decoded.foo).toEqual("bar")
     })
+
+    describe("blocklist behavior", () => {
+        const blockedIp = "203.0.113.10";
+
+        it("should block an IP after more than 5 invalid page requests", async () => {
+            for (let i = 0; i < 6; i++) {
+                const res = await fetch(`http://localhost:${port}/does-not-exist-${i}`, {
+                    headers: {
+                        "x-real-ip": blockedIp,
+                    },
+                });
+                expect(res.status).toBe(404);
+            }
+
+            const blocked = await fetch(`http://localhost:${port}/does-not-exist-blocked`, {
+                headers: {
+                    "x-real-ip": blockedIp,
+                },
+            });
+            expect(blocked.status).toBe(403);
+            expect(await blocked.text()).toBe("Forbidden");
+        });
+
+        it("should block an IP after more than 5 invalid login attempts", async () => {
+            mikroRest.handleLogin("/login", async () => null);
+
+            for (let i = 0; i < 6; i++) {
+                const res = await fetch(`http://localhost:${port}/login`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "x-real-ip": blockedIp,
+                    },
+                    body: JSON.stringify({ username: "wrong", password: "credentials" }),
+                });
+                expect(res.status).toBe(401);
+            }
+
+            const blocked = await fetch(`http://localhost:${port}/login`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-real-ip": blockedIp,
+                },
+                body: JSON.stringify({ username: "wrong", password: "credentials" }),
+            });
+            expect(blocked.status).toBe(403);
+            expect(await blocked.text()).toBe("Forbidden");
+        });
+
+        it("should clear the blocklist entry after 10 minutes without new failures", async () => {
+            jest.useFakeTimers();
+            try {
+                jest.setSystemTime(new Date("2026-04-29T12:00:00.000Z"));
+
+                for (let i = 0; i < 6; i++) {
+                    const res = await fetch(`http://localhost:${port}/expired-block-check-${i}`, {
+                        headers: {
+                            "x-real-ip": blockedIp,
+                        },
+                    });
+                    expect(res.status).toBe(404);
+                }
+
+                const blocked = await fetch(`http://localhost:${port}/expired-block-check-blocked`, {
+                    headers: {
+                        "x-real-ip": blockedIp,
+                    },
+                });
+                expect(blocked.status).toBe(403);
+
+                jest.setSystemTime(new Date("2026-04-29T12:10:01.000Z"));
+
+                const afterExpiry = await fetch(`http://localhost:${port}/expired-block-check-after-expiry`, {
+                    headers: {
+                        "x-real-ip": blockedIp,
+                    },
+                });
+                expect(afterExpiry.status).toBe(404);
+            } finally {
+                jest.useRealTimers();
+            }
+        });
+    });
 
 });

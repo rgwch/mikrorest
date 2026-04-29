@@ -56,6 +56,12 @@ export type MikroRestOptions = {
   allowedOriginsProd?: string[];
 };
 
+type BlocklistEntry = {
+  IP: string; // The IP address
+  count: number; // Number of offenses
+  lastOffense: Date; // Timestamp of the last offense
+  blockedUntil: Date | null; // If currently blocked, the timestamp until which the IP is blocked
+}
 export class MikroRest {
   private server: any
   private mode = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test" || process.env.NODE_ENV == "debug") ? "development" : "production";
@@ -83,6 +89,8 @@ export class MikroRest {
     // e.g. path.join(__dirname, "..", "..", 'client', "dist")
   ];
   private loginRoute = ""
+
+  private blocklist: Map<string, BlocklistEntry> = new Map(); // to block IPs after repeated errors or suspicious activity. 
 
   /**
    * The constructor creates practical defaults for the MikroRest instance. Modify as needed with options.
@@ -202,8 +210,23 @@ export class MikroRest {
   private async handler(req: IncomingMessage, res: ServerResponse) {
     const method = req.method?.toLowerCase() ?? "get"
     const origin = req.headers.origin ?? "";
-
-    logger.debug('Requesting ' + req.url + ", method: " + method + ", origin: " + origin + ", from IP: " + getRealClientIP(req));
+    const ip = getRealClientIP(req);
+    const blockEntry = this.blocklist.get(ip);
+    if (blockEntry) {
+      const now = new Date();
+      if (now.getTime() - blockEntry.lastOffense.getTime() > 10 * 60 * 1000) {
+        // Inactive entries are cleared after 10 minutes without new failures.
+        this.blocklist.delete(ip);
+      } else if (blockEntry.blockedUntil && blockEntry.blockedUntil > now) {
+        logger.warning(`Blocked IP attempted access: ${ip}`);
+        res.statusCode = 403;
+        res.end("Forbidden");
+        return;
+      } else if (blockEntry.blockedUntil && blockEntry.blockedUntil <= now) {
+        this.blocklist.delete(ip); // Remove from blocklist if block has expired
+      }
+    }
+    logger.debug('Requesting ' + req.url + ", method: " + method + ", origin: " + origin + ", from IP: " + ip);
     // logger.debug("Headers: ", JSON.stringify(req.headers));
     if (this.allowedOrigins.includes("*") || this.allowedOrigins.includes(origin)) {
       res.setHeader('Access-Control-Allow-Origin', origin);
@@ -413,7 +436,8 @@ export class MikroRest {
             this.sendJson(res, { token: token, expires: validUntil, user: user });
             return false; // Stop further processing
           } else {
-            logger.warning(`Invalid login attempt for username: ${body.username} with password: ${body.password} from ${getRealClientIP(req)}`);
+            const ip = getRealClientIP(req);
+            logger.warning(`Invalid login attempt for username: ${body.username} with password: ${body.password} from ${ip}`);
             this.error(req, res, 401, "Invalid username or password");
             return false; // Stop further processing
           }
@@ -611,6 +635,21 @@ export class MikroRest {
    */
   public error(req: IncomingMessage | undefined, res?: ServerResponse, code?: number, text?: string, headers?: { [key: string]: string }) {
     const origin = getRealClientIP(req);
+    const blockEntry = this.blocklist.get(origin);
+    if (blockEntry) {
+      if (blockEntry.lastOffense && new Date().getTime() - blockEntry.lastOffense.getTime() > 10 * 60 * 1000) { // Reset block entry after 10 minutes
+        this.blocklist.delete(origin);
+      } else {
+        blockEntry.count++;
+        blockEntry.lastOffense = new Date();
+        if (blockEntry.count > 5) { // Block IP for 10 minutes after more than 5 offenses
+          blockEntry.blockedUntil = new Date(Date.now() + 10 * 60 * 1000);
+          logger.warning(`IP ${origin} blocked until ${blockEntry.blockedUntil} after ${blockEntry.count} offenses`);
+        }
+      }
+    } else {
+      this.blocklist.set(origin, { IP: origin, count: 1, lastOffense: new Date(), blockedUntil: null });
+    }
     if (req && origin) {
       logger.error(`Error ${code ?? 500} for ${req.url} from ${origin}: ${text ?? serverError}`);
     } else {
