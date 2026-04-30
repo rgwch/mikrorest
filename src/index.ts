@@ -42,6 +42,8 @@ export type MikroRestOptions = {
     /** path to SSL certificate file */
     cert: string;
   };
+  /** Whether to use the built-in blocklist feature for IPs with repeated offenses (default: false) */
+  useBlocklist?: boolean;
   /** CORS settings: Allowed headers in development mode (default: ['Content-Type', 'Authorization']) */
   allowedHeadersDevel?: string[];
   /** CORS settings: Allowed methods in development mode (default: ['GET', 'POST', 'OPTIONS'])  */
@@ -90,6 +92,7 @@ export class MikroRest {
   ];
   private loginRoute = ""
 
+  private useBlocklist: boolean = false; // Whether to use the built-in blocklist for IPs with repeated offenses (default: false)
   private blocklist: Map<string, BlocklistEntry> = new Map(); // to block IPs after repeated errors or suspicious activity. 
 
   /**
@@ -103,6 +106,7 @@ export class MikroRest {
       this.allowedHeadersDevel = options.allowedHeadersDevel || this.allowedHeadersDevel;
       this.allowedMethodsDevel = options.allowedMethodsDevel || this.allowedMethodsDevel;
       this.allowedOriginsDevel = options.allowedOriginsDevel || this.allowedOriginsDevel;
+      this.useBlocklist = options.useBlocklist !== undefined ? options.useBlocklist : this.useBlocklist;
       this.allowedHeadersProd = options.allowedHeadersProd || this.allowedHeadersProd;
       this.allowedMethodsProd = options.allowedMethodsProd || this.allowedMethodsProd;
       this.allowedOriginsProd = options.allowedOriginsProd || this.allowedOriginsProd;
@@ -211,19 +215,21 @@ export class MikroRest {
     const method = req.method?.toLowerCase() ?? "get"
     const origin = req.headers.origin ?? "";
     const ip = getRealClientIP(req);
-    const blockEntry = this.blocklist.get(ip);
-    if (blockEntry) {
-      const now = new Date();
-      if (now.getTime() - blockEntry.lastOffense.getTime() > 10 * 60 * 1000) {
-        // Inactive entries are cleared after 10 minutes without new failures.
-        this.blocklist.delete(ip);
-      } else if (blockEntry.blockedUntil && blockEntry.blockedUntil > now) {
-        logger.warning(`Blocked IP attempted access: ${ip}`);
-        res.statusCode = 403;
-        res.end("Forbidden");
-        return;
-      } else if (blockEntry.blockedUntil && blockEntry.blockedUntil <= now) {
-        this.blocklist.delete(ip); // Remove from blocklist if block has expired
+    if (this.useBlocklist) {
+      const blockEntry = this.blocklist.get(ip);
+      if (blockEntry) {
+        const now = new Date();
+        if (now.getTime() - blockEntry.lastOffense.getTime() > 10 * 60 * 1000) {
+          // Inactive entries are cleared after 10 minutes without new failures.
+          this.blocklist.delete(ip);
+        } else if (blockEntry.blockedUntil && blockEntry.blockedUntil > now) {
+          logger.warning(`Blocked IP attempted access: ${ip}`);
+          res.statusCode = 403;
+          res.end("Forbidden");
+          return;
+        } else if (blockEntry.blockedUntil && blockEntry.blockedUntil <= now) {
+          this.blocklist.delete(ip); // Remove from blocklist if block has expired
+        }
       }
     }
     logger.debug('Requesting ' + req.url + ", method: " + method + ", origin: " + origin + ", from IP: " + ip);
