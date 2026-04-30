@@ -1,4 +1,4 @@
-**@rgwch/mikrorest v1.1.0**
+**@rgwch/mikrorest v1.1.1**
 
 ***
 
@@ -54,6 +54,10 @@ You can use MikroRest's built-in authorization system (of course you can use you
 
 (2) Call the handleLogin() method with a route and an authentication function as parameters. If you do so, MikroRest will create a login route at the specified location and call the authentication function if the user POSTs to that login route with username and password in the JSON body. If the authentication function returns an object, a JWT token is created and returned together with that object to the client. Note: You must provide a MIKROREST_JWT_SECRET environment variable which gives the secret key to sign the JWT token.
 The client must then include an "Authorization: Token &lt;token&gt;" header with every request.
+
+## Built-in blocklist
+
+If `options.useBlocklist` is `true`, Miktorest will monitor bad login attempts, requests for inexistent pages or requests for files like .env or config and block originating IPs after 5 such attempts for 10 Minutes. 
 
 ## SSL
 

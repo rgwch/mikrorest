@@ -1,4 +1,4 @@
-[**@rgwch/mikrorest v1.1.0**](../README.md)
+[**@rgwch/mikrorest v1.1.1**](../README.md)
 
 ***
 
@@ -16,7 +16,7 @@ Defined in: index.ts:35
 
 > `optional` **allowedHeadersDevel?**: `string`[]
 
-Defined in: index.ts:46
+Defined in: index.ts:48
 
 CORS settings: Allowed headers in development mode (default: ['Content-Type', 'Authorization'])
 
@@ -26,7 +26,7 @@ CORS settings: Allowed headers in development mode (default: ['Content-Type', 'A
 
 > `optional` **allowedHeadersProd?**: `string`[]
 
-Defined in: index.ts:52
+Defined in: index.ts:54
 
 CORS settings: Allowed headers in production mode (default: ['Content-Type', 'Authorization'])
 
@@ -36,7 +36,7 @@ CORS settings: Allowed headers in production mode (default: ['Content-Type', 'Au
 
 > `optional` **allowedMethodsDevel?**: `string`[]
 
-Defined in: index.ts:48
+Defined in: index.ts:50
 
 CORS settings: Allowed methods in development mode (default: ['GET', 'POST', 'OPTIONS'])
 
@@ -46,7 +46,7 @@ CORS settings: Allowed methods in development mode (default: ['GET', 'POST', 'OP
 
 > `optional` **allowedMethodsProd?**: `string`[]
 
-Defined in: index.ts:54
+Defined in: index.ts:56
 
 CORS settings: Allowed methods in production mode (default: ['GET', 'POST', 'OPTIONS'])
 
@@ -56,7 +56,7 @@ CORS settings: Allowed methods in production mode (default: ['GET', 'POST', 'OPT
 
 > `optional` **allowedOriginsDevel?**: `string`[]
 
-Defined in: index.ts:50
+Defined in: index.ts:52
 
 CORS settings: Allowed origins in development mode (default: ['*'])
 
@@ -66,7 +66,7 @@ CORS settings: Allowed origins in development mode (default: ['*'])
 
 > `optional` **allowedOriginsProd?**: `string`[]
 
-Defined in: index.ts:56
+Defined in: index.ts:58
 
 CORS settings: Allowed origins in production mode (default: [''])
 
@@ -101,3 +101,13 @@ path to SSL certificate file
 > **key**: `string`
 
 path to SSL key file
+
+***
+
+### useBlocklist?
+
+> `optional` **useBlocklist?**: `boolean`
+
+Defined in: index.ts:46
+
+Whether to use the built-in blocklist feature for IPs with repeated offenses (default: false)
