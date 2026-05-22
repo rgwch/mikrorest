@@ -9,7 +9,7 @@ describe('MikroRest Authentication Tests', () => {
         process.env.MIKROREST_API_KEYS = 'test-key-1,test-key-2';
         process.env.MIKROREST_JWT_SECRET = 'jwt-secret';
         process.env.MIKROREST_PORT = port.toString();
-        mikroRest = new MikroRest();
+        mikroRest = new MikroRest({ useBlocklist: true });
         mikroRest.addRoute('get', '/protected', mikroRest.authorize, async (req, res) => {
             mikroRest.sendJson(res, { message: 'protected content' });
             return false;
@@ -254,4 +254,73 @@ describe('MikroRest Authentication Tests', () => {
         });
     });
 
+    it("should return refreshed JWT header when sliding expiration is enabled", async () => {
+        const slidingPort = port + 1;
+        const slidingServer = new MikroRest({
+            port: slidingPort,
+            jwtSlidingExpiration: true,
+            jwtSlidingThresholdMinutes: 60,
+            jwtRefreshHeaderName: "X-Auth-Token"
+        });
+
+        slidingServer.addRoute('get', '/protected', slidingServer.authorize, async (req, res) => {
+            slidingServer.sendJson(res, { ok: true, user: (req as any).user });
+            return false;
+        });
+
+        slidingServer.handleLogin("/login", async (username, password) => {
+            return username === 'admin' && password === 'password' ? { username } : null;
+        });
+
+        await slidingServer.start();
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        const loginRes = await fetch(`http://localhost:${slidingPort}/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: "admin", password: "password" })
+        });
+
+        const loginData = await loginRes.json();
+        const token = loginData.token;
+
+        await new Promise(resolve => setTimeout(resolve, 20));
+
+        const protectedRes = await fetch(`http://localhost:${slidingPort}/protected`, {
+            headers: { Authorization: "Token " + token }
+        });
+
+        expect(protectedRes.status).toBe(200);
+        const refreshed = protectedRes.headers.get("x-auth-token");
+        expect(refreshed).toBeTruthy();
+
+        const protectedRes2 = await fetch(`http://localhost:${slidingPort}/protected`, {
+            headers: { Authorization: "Token " + refreshed }
+        });
+        expect(protectedRes2.status).toBe(200);
+
+        await slidingServer.stop();
+    });
+
+    it("should not return refreshed JWT header when sliding expiration is disabled", async () => {
+        mikroRest.handleLogin("/login", async (username, password) => {
+            return username === 'admin' && password === 'password' ? { username } : null;
+        });
+
+        const loginRes = await fetch("http://localhost:9999/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: "admin", password: "password" })
+        });
+
+        const loginData = await loginRes.json();
+        const token = loginData.token;
+
+        const protectedRes = await fetch("http://localhost:9999/protected", {
+            headers: { Authorization: "Token " + token }
+        });
+
+        expect(protectedRes.status).toBe(200);
+        expect(protectedRes.headers.get("x-auth-token")).toBeNull();
+    });
 });

@@ -56,6 +56,12 @@ export type MikroRestOptions = {
   allowedMethodsProd?: string[];
   /** CORS settings: Allowed origins in production mode (default: ['']) */
   allowedOriginsProd?: string[];
+  /** Enable sliding JWT expiration (default: false) */
+  jwtSlidingExpiration?: boolean;
+  /** Refresh token when remaining lifetime is below this threshold (minutes, default: 10) */
+  jwtSlidingThresholdMinutes?: number;
+  /** Response header carrying renewed token (default: X-Auth-Token) */
+  jwtRefreshHeaderName?: string;
 };
 
 type BlocklistEntry = {
@@ -84,7 +90,9 @@ export class MikroRest {
   private allowedHeadersProd: string[] = [...this.allowedHeadersDevel, 'X-Requested-With', 'Accept', 'Origin', 'Referer']
   private allowedMethodsProd: string[] = [...this.allowedMethodsDevel]
   private allowedOriginsProd: string[] = ['']
-
+  private jwtSlidingExpiration: boolean = false;
+  private jwtSlidingThresholdMinutes: number = 10;
+  private jwtRefreshHeaderName: string = "X-Auth-Token";
   private routes: Map<string, MikroRestRoute> = new Map();
 
   private staticDirs: string[] = [
@@ -101,6 +109,7 @@ export class MikroRest {
    * 
    */
   public constructor(private options?: MikroRestOptions) {
+    this.authorize = this.authorize.bind(this);
     this.port = options?.port || parseInt(process.env.MIKROREST_PORT || '3339');
     if (options) {
       this.allowedHeadersDevel = options.allowedHeadersDevel || this.allowedHeadersDevel;
@@ -110,6 +119,9 @@ export class MikroRest {
       this.allowedHeadersProd = options.allowedHeadersProd || this.allowedHeadersProd;
       this.allowedMethodsProd = options.allowedMethodsProd || this.allowedMethodsProd;
       this.allowedOriginsProd = options.allowedOriginsProd || this.allowedOriginsProd;
+      this.jwtSlidingExpiration = options.jwtSlidingExpiration !== undefined ? options.jwtSlidingExpiration : this.jwtSlidingExpiration;
+      this.jwtSlidingThresholdMinutes = options.jwtSlidingThresholdMinutes !== undefined ? options.jwtSlidingThresholdMinutes : this.jwtSlidingThresholdMinutes;
+      this.jwtRefreshHeaderName = options.jwtRefreshHeaderName !== undefined ? options.jwtRefreshHeaderName : this.jwtRefreshHeaderName;
     }
 
     this.allowedOrigins = this.mode === "development" ? this.allowedOriginsDevel : this.allowedOriginsProd;
@@ -310,6 +322,20 @@ export class MikroRest {
     }
   }
 
+  private getTokenExpiryDate(decoded: any): Date | null {
+    if (!decoded?.exp) return null;
+    const expDate = new Date(decoded.exp);
+    return isNaN(expDate.getTime()) ? null : expDate;
+  }
+
+  private appendExposeHeaders(res: ServerResponse, ...headerNames: string[]) {
+    const existing = res.getHeader("Access-Control-Expose-Headers");
+    const current = typeof existing === "string"
+      ? existing.split(",").map(v => v.trim()).filter(Boolean)
+      : [];
+    const merged = new Set([...current, ...headerNames]);
+    res.setHeader("Access-Control-Expose-Headers", Array.from(merged).join(", "));
+  }
   /**
    * Static helper method to decode an existing JWT token
    * @param token The JWT token to decode
@@ -364,53 +390,76 @@ export class MikroRest {
    * @returns true if authorization succeeded.
    * Note: later handlers in the chain can access the decoded token via req.user
    */
-  public async authorize(req: IncomingMessage, res: ServerResponse): Promise<boolean> {
-    function badRequest() {
-      if (res) {
-        res.statusCode = 401;
-        res.setHeader('Content-Type', 'text/plain');
-        res.end("Unauthorized");
-      }
-      return false;
+ public async authorize(req: IncomingMessage, res: ServerResponse): Promise<boolean> {
+  function badRequest() {
+    if (res) {
+      res.statusCode = 401;
+      res.setHeader('Content-Type', 'text/plain');
+      res.end("Unauthorized");
     }
-    const api_keys = process.env.MIKROREST_API_KEYS?.split(",") || process.env.API_KEYS?.split(",") || []
-
-    const auth = req.headers.authorization
-    if (auth && (auth.startsWith("Token ") || auth.startsWith("Bearer "))) {
-      let key = auth.split(/\s+/)[1]
-      if (api_keys.includes(key)) {
-        return true
-      } else {
-        try {
-          const jwt_secret = process.env.MIKROREST_JWT_SECRET;
-          if (!jwt_secret) {
-            logger.error("No JWT_SECRET configured");
-            if (res) {
-              res.statusCode = 500;
-              res.setHeader('Content-Type', 'text/plain');
-              res.end("Server not configured for JWT");
-            }
-            return false;
-          }
-          const decoded = MikroRest.decodeJWT(key);
-          if (decoded) {
-            (req as any).user = decoded; // attach decoded token to request object
-            return true;
-          } else {
-            logger.warning(`JWT token from ${getRealClientIP(req)} expired or invalid: ${key}`);
-            return badRequest();
-          }
-        } catch (err) {
-          logger.warning(`Unauthorized access with key from ${getRealClientIP(req)}: ${key}`);
-          return badRequest();
-        }
-      }
-    } else {
-      logger.warning(`Unauthorized access without key from ${getRealClientIP(req)}: ${auth}`);
-      return badRequest();
-    }
+    return false;
   }
 
+  const api_keys = process.env.MIKROREST_API_KEYS?.split(",") || process.env.API_KEYS?.split(",") || [];
+  const auth = req.headers.authorization;
+
+  if (auth && (auth.startsWith("Token ") || auth.startsWith("Bearer "))) {
+    const key = auth.split(/\s+/)[1];
+
+    if (api_keys.includes(key)) {
+      return true;
+    }
+
+    try {
+      const jwt_secret = process.env.MIKROREST_JWT_SECRET;
+      if (!jwt_secret) {
+        logger.error("No JWT_SECRET configured");
+        if (res) {
+          res.statusCode = 500;
+          res.setHeader('Content-Type', 'text/plain');
+          res.end("Server not configured for JWT");
+        }
+        return false;
+      }
+
+      const decoded = MikroRest.decodeJWT(key);
+      if (!decoded) {
+        logger.warning("JWT token from " + getRealClientIP(req) + " expired or invalid");
+        return badRequest();
+      }
+
+      const userPayload = decoded.user ?? decoded;
+      (req as any).user = userPayload;
+
+      if (this.jwtSlidingExpiration) {
+        const expDate = this.getTokenExpiryDate(decoded);
+        if (expDate) {
+          const remainingMs = expDate.getTime() - Date.now();
+          const thresholdMs = this.jwtSlidingThresholdMinutes * 60 * 1000;
+
+          if (remainingMs > 0 && remainingMs <= thresholdMs) {
+            const refreshed = MikroRest.createJWT(userPayload);
+            res.setHeader(this.jwtRefreshHeaderName, refreshed.token);
+            res.setHeader(this.jwtRefreshHeaderName + "-Expires", refreshed.validUntil.toISOString());
+            this.appendExposeHeaders(
+              res,
+              this.jwtRefreshHeaderName,
+              this.jwtRefreshHeaderName + "-Expires"
+            );
+          }
+        }
+      }
+
+      return true;
+    } catch (err) {
+      logger.warning("Unauthorized access with key from " + getRealClientIP(req));
+      return badRequest();
+    }
+  } else {
+    logger.warning("Unauthorized access without key from " + getRealClientIP(req) + ": " + auth);
+    return badRequest();
+  }
+}
   /**
    * Let MikroRest handle login for you. Supply a route and function that checks username and password and returns an (arbitrary) object 
    * if they are valid or null if not.
@@ -459,12 +508,13 @@ export class MikroRest {
                 const decoded = jwt.decode(key, secret);
                 if (decoded && decoded.exp && new Date(decoded.exp) > new Date()) {
                   // Create a new token with extended expiration
-                  const expiration = parseInt(process.env.MIKROREST_JWT_EXPIRATION || '60'); // in minutes
-                  const validUntil = new Date(Date.now() + expiration * 60000);
-                  const payload = { username: decoded.username, exp: validUntil };
-                  const token = jwt.encode(payload, secret);
-                  logger.info(`Token for user ${decoded.username} extended, new token: ${token}`);
-                  this.sendJson(res, { token: token, expires: validUntil }); // expiration in minutes
+                  const decoded = jwt.decode(key, secret);
+                  if (decoded && decoded.exp && new Date(decoded.exp) > new Date()) {
+                    const userPayload = decoded.user ?? decoded;
+                    const refreshed = MikroRest.createJWT(userPayload);
+                    this.sendJson(res, { token: refreshed.token, expires: refreshed.validUntil, user: userPayload });
+                    return false;
+                  }
                   return false; // Stop further processing
                 } else {
                   this.error(req, res, 401, "Token expired or invalid");
