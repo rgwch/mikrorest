@@ -1,4 +1,4 @@
-[**@rgwch/mikrorest v1.1.1**](../README.md)
+[**@rgwch/mikrorest v1.2.0**](../README.md)
 
 ***
 
@@ -69,6 +69,36 @@ CORS settings: Allowed origins in development mode (default: ['*'])
 Defined in: index.ts:58
 
 CORS settings: Allowed origins in production mode (default: [''])
+
+***
+
+### jwtRefreshHeaderName?
+
+> `optional` **jwtRefreshHeaderName?**: `string`
+
+Defined in: index.ts:64
+
+Response header carrying renewed token (default: X-Auth-Token)
+
+***
+
+### jwtSlidingExpiration?
+
+> `optional` **jwtSlidingExpiration?**: `boolean`
+
+Defined in: index.ts:60
+
+Enable sliding JWT expiration (default: false)
+
+***
+
+### jwtSlidingThresholdMinutes?
+
+> `optional` **jwtSlidingThresholdMinutes?**: `number`
+
+Defined in: index.ts:62
+
+Refresh token when remaining lifetime is below this threshold (minutes, default: 10)
 
 ***
 

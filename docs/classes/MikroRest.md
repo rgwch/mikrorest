@@ -1,4 +1,4 @@
-[**@rgwch/mikrorest v1.1.1**](../README.md)
+[**@rgwch/mikrorest v1.2.0**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: MikroRest
 
-Defined in: index.ts:67
+Defined in: index.ts:73
 
 ## Constructors
 
@@ -14,7 +14,7 @@ Defined in: index.ts:67
 
 > **new MikroRest**(`options?`): `MikroRest`
 
-Defined in: index.ts:103
+Defined in: index.ts:111
 
 The constructor creates practical defaults for the MikroRest instance. Modify as needed with options.
 
@@ -36,7 +36,7 @@ Optional configuration for the MikroRest instance.
 
 > **addRoute**(`method`, `path`, ...`handlers`): `void`
 
-Defined in: index.ts:130
+Defined in: index.ts:142
 
 Adds a new route to the MikroRest instance. 
 If the method is called several times with the same method and path, 
@@ -78,7 +78,7 @@ Error if parameters are wrong
 
 > **addStaticDir**(`dir`): `void`
 
-Defined in: index.ts:164
+Defined in: index.ts:176
 
 Add a directory for static files. If the method is called several times,
 directories are searched in the sequence they were added.
@@ -105,7 +105,7 @@ Error if the directory does not exist
 
 > **authorize**(`req`, `res`): `Promise`\<`boolean`\>
 
-Defined in: index.ts:367
+Defined in: index.ts:393
 
 Built-in authorization: Check header for Bearer or Token and a key supplied in the environment variable MIKROREST_API_KEYS,
 or check for a valid JWT token if MIKROREST_JWT_SECRET is set.
@@ -138,7 +138,7 @@ Note: later handlers in the chain can access the decoded token via req.user
 
 > **clearRoutes**(): `void`
 
-Defined in: index.ts:175
+Defined in: index.ts:187
 
 Clears all routes and static directories
 
@@ -152,7 +152,7 @@ Clears all routes and static directories
 
 > **error**(`req`, `res?`, `code?`, `text?`, `headers?`): `void`
 
-Defined in: index.ts:659
+Defined in: index.ts:709
 
 Send an error response
 
@@ -194,7 +194,7 @@ Optional headers to set (key-value pairs). Content-Type is set automatically to 
 
 > **getParams**(`req`): `URLSearchParams`
 
-Defined in: index.ts:202
+Defined in: index.ts:214
 
 Convenience function to get the query parameters from the request
 
@@ -218,7 +218,7 @@ The URL search parameters
 
 > **getRoutes**(): `Map`\<`string`, [`MikroRestRoute`](../interfaces/MikroRestRoute.md)\>
 
-Defined in: index.ts:210
+Defined in: index.ts:222
 
 Get all routes as a Map
 
@@ -234,7 +234,7 @@ all routes defined so far
 
 > **getUrl**(`req`): `URL`
 
-Defined in: index.ts:193
+Defined in: index.ts:205
 
 Convenience function to get the URL from the request
 
@@ -258,7 +258,7 @@ the URL object
 
 > **handleLogin**(`loginRoute`, `authenticate`): `void`
 
-Defined in: index.ts:426
+Defined in: index.ts:475
 
 Let MikroRest handle login for you. Supply a route and function that checks username and password and returns an (arbitrary) object 
 if they are valid or null if not.
@@ -293,7 +293,7 @@ an async function that checks username and password and resolves to a (User-) Ob
 
 > **readBodyBuffer**(`req`): `Promise`\<`Buffer`\<`ArrayBufferLike`\>\>
 
-Defined in: index.ts:538
+Defined in: index.ts:588
 
 Read the request body as Buffer
 
@@ -321,7 +321,7 @@ Error if the request body is not valid
 
 > **readJsonBody**(`req`, `res?`): `Promise`\<`any`\>
 
-Defined in: index.ts:511
+Defined in: index.ts:561
 
 Read the request body as JSON
 
@@ -351,7 +351,7 @@ Error if the request body is not valid JSON
 
 > **sendBuffer**(`res?`, `buffer?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:620
+Defined in: index.ts:670
 
 Send a binary response.
 
@@ -391,7 +391,7 @@ Error if res or buffer is not provided
 
 > **sendFile**(`res?`, `filepath?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:643
+Defined in: index.ts:693
 
 Send any file.
 
@@ -427,7 +427,7 @@ optional headers to set (key-value pairs). Content-Type is set automatically bas
 
 > **sendHtml**(`res?`, `body?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:580
+Defined in: index.ts:630
 
 Send a HTML response. If body is not provided, it will send an empty response with status 200,ok.
 
@@ -463,7 +463,7 @@ optional headers to set (key-value pairs). Content-Type is set automatically to 
 
 > **sendJson**(`res?`, `body?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:560
+Defined in: index.ts:610
 
 Send a JSON response. If body is not provided, it will send a default response with {"status": "ok"}.
 
@@ -501,7 +501,7 @@ Optional headers to set (key-value pairs). Content-Type is set automatically to 
 
 > **sendPlain**(`res?`, `text?`, `code?`, `headers?`): `void`
 
-Defined in: index.ts:599
+Defined in: index.ts:649
 
 Send a plaintext response. If text is not provided, it will send a an empty string with status 200,ok.
 
@@ -537,7 +537,7 @@ optional headers to set (key-value pairs). Content-Type is set automatically to 
 
 > **setLogfile**(`logfile`): `void`
 
-Defined in: index.ts:185
+Defined in: index.ts:197
 
 Set the logfile for the built-in logger. If logfile is not provided, logs are sent to the console.
 
@@ -557,7 +557,7 @@ Set the logfile for the built-in logger. If logfile is not provided, logs are se
 
 > **setMaxAge**(`res`, `maxAge`): `void`
 
-Defined in: index.ts:693
+Defined in: index.ts:743
 
 #### Parameters
 
@@ -579,7 +579,7 @@ Defined in: index.ts:693
 
 > **start**(): `any`
 
-Defined in: index.ts:275
+Defined in: index.ts:287
 
 Launch the server. routes and static directories can be added before or after calling this method.
 
@@ -595,7 +595,7 @@ the HTTP server instance
 
 > **stop**(): `Promise`\<`void`\>
 
-Defined in: index.ts:301
+Defined in: index.ts:313
 
 Stop the server. No requests are accepted after this method is called.
 
@@ -611,7 +611,7 @@ A promise that resolves when the server has stopped
 
 > `static` **createJWT**(`user`): `object`
 
-Defined in: index.ts:345
+Defined in: index.ts:371
 
 Static helper method to create a JWT token
 
@@ -643,7 +643,7 @@ An object containing the token and its expiration date
 
 > `static` **decodeJWT**(`token`, `checkExpire?`): `any`
 
-Defined in: index.ts:319
+Defined in: index.ts:345
 
 Static helper method to decode an existing JWT token
 
