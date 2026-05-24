@@ -11,7 +11,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rgwch/mikrorest.git"
+    "url": "git+https://codeberg.org/rgwch/mikrorest.git"
   },
   "author": "rgwch",
   "main": "dist/index.js",
